@@ -14,7 +14,7 @@ Antes de iniciar el servidor sigue los siguentes pasos:
     *Pon tus credenciales (usuario y contraseña) para hacer la conexcion a la base de datos.
         Nota: Asegurate que el "usuario" tenga todos los "privilegios" necesarios.
 
-    En caso de que un dato este erroeno, cambialo para que la configuración sea la correcta.
+    En caso de que un dato este erróneo, cambialo para que la configuración sea la correcta.
 
 3 - Instala los modulos (dependencias) necesarios, corre en tu terminal: npm i
         En caso de que no funcione instala manualmente las dependencias necesarias ubicadas en "package.json"
