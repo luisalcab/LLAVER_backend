@@ -5,6 +5,9 @@ const cors = require('cors');
 // Importar capa de negocios
 const controller = require('./index.js');
 
+// Importar capa de autenticación
+const authController = require('../../authentication/controller/authController.js');
+
 // Inicializando router
 const router = express.Router();
 
@@ -12,30 +15,32 @@ const router = express.Router();
 const { corsOptions } = require('../utils/cors.js');
 
 //Rutas de este componente
-router.get('/', cors(corsOptions), getDoctor);
-router.post('/agregar', cors(corsOptions), addDoctor);
+router.put('/modificar/:idDoctor', cors(corsOptions), authController.isAuthenticated, updateDataDoctor);
+router.delete('/eliminar/:idDoctor', cors(corsOptions), authController.isAuthenticated, deleteDataDoctor);
+router.get('/obtenerDoctorId/:idDoctor', cors(corsOptions), authController.isAuthenticated, getDoctorId);
+router.post('/obtenerDoctoresNombre', cors(corsOptions), authController.isAuthenticated, getDoctorName);
 
-async function getDoctor(req, res){
-    res.send({data: await controller.getDoctors()})
-}
-
-/*
-recibe json:
-    nombre
-    apellido
-    email
-    password
-
-Envia respuesta:
-    status:
-    1 ok
-    2 Nombre ya existente (Nombre apellido)
-    3 email
-*/
-async function addDoctor(req, res){
+async function updateDataDoctor(req, res){
     res.send({
-        status: await controller.addNewDoctor(req.body)
-    });
+        status: await controller.updateDataDoctor(req.body, req.params)
+    })  
 }
 
+async function deleteDataDoctor(req, res){
+    res.send({
+        status: await controller.deleteDataDoctor(req.params)
+    })
+}
+
+async function getDoctorId(req, res){
+    res.send({
+        status: await controller.getDoctorById(req.params)
+    })
+}
+
+async function getDoctorName(req, res){
+    res.send({
+        status: await controller.getDoctorByName(req.body)
+    })
+}
 module.exports = router;

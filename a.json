@@ -1,0 +1,59 @@
+{
+    "respuestasExamen": [
+        {
+            "idPregunta": 1,
+            "respuesta": "asdasdsad",
+            "puntaje": "5"
+        },
+        {
+            "idPregunta": 2,
+            "respuesta": "asdsadasd",
+            "puntaje": "2"
+        },
+        {
+            "idPregunta": 3,
+            "respuesta": "asdadwawdas",
+            "puntaje": "3"
+        },
+        {
+            "idPregunta": 4,
+            "respuesta": "asfwfdgegd",
+            "puntaje": "3"
+        },
+        {
+            "idPregunta": 5,
+            "respuesta": "asdasdsadasfasfsfaf",
+            "puntaje": "2"
+        },
+        {
+            "idPregunta": 6,
+            "respuesta": "fnjyfthtdfb",
+            "puntaje": "5"
+        },
+        {
+            "idPregunta": 7,
+            "respuesta": "asfbiptbr",
+            "puntaje": "1"
+        },
+        {
+            "idPregunta": 8,
+            "respuesta": "rtththtwefwfwefo",
+            "puntaje": "4"
+        },
+        {
+            "idPregunta": 9,
+            "respuesta": "Cosgsgrwgregr",
+            "puntaje": "2"
+        },
+        {
+            "idPregunta": 10,
+            "respuesta": "onviosvmodsvmidvo",
+            "puntaje": "4"
+        },
+        {
+            "idPregunta": 11,
+            "respuesta": "sdvknovsdivnsovnfinvsf",
+            "puntaje": "1"
+        }
+    ]
+}

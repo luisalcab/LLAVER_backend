@@ -1,5 +1,6 @@
 'use strict'
 const connect = require('../../conection_store/controllerStore.js');
+// const tablas = require('../../utils/tablasDatabase.js');
 const tablas = require('../utils/tablasDatabase.js');
 
 async function getDoctors(){

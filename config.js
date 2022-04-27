@@ -10,7 +10,14 @@ module.exports = {
     mysql: {
         host: process.env.MYSQL_HOST || 'localhost',
         database: process.env.MYSQL_HOST || 'proyecto_geriatra',
-        user: process.env.MYSQL_HOST || 'Tu usuario',
-        password: process.env.MYSQL_HOST || 'Tu contraseña'
-    }
+        user: process.env.MYSQL_HOST || 'root',
+        password: process.env.MYSQL_HOST || 'Roter12'
+    },
+    jwt: {
+        key: "Clave/Ultra_Secreta891",
+        time: 14440
+    },
+    hash: {
+        times: 8
+    } 
 }

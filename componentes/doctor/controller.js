@@ -1,35 +1,57 @@
 'use strict'
-const connect = require('../../conection_store/controllerStore.js');
+const { query } = require('../../conection_store/controllerStore.js');
 const tablas = require('../utils/tablasDatabase.js');
 
-async function getDoctors(){
-    return await getAllDoctors();
+
+async function updateDataDoctor(data, element){
+    await updateDoctor(data, element);
+    return 1
 }
 
-async function addNewDoctor(data){
-    if(data.nombre == ""){
-        return 2 //Algun dato esta vacio        
-    } else {
-        await addDoctor(data);
-        return 1; //Todo ok
-    }
+async function deleteDataDoctor(element){
+    await deleteDoctor(element);
+    return 1;
+}
+
+async function getDoctorById(data){
+    return await getDoctorId(data);
+}
+
+async function getDoctorByName(data){
+    return await getDoctorName(data);
 }
 
 // Queries
-async function getAllDoctors(){ 
-    return await connect.query(`
-        SELECT * FROM ${ tablas.DOCTORES };
+async function updateDoctor(data, element){
+    await query(`
+        UPDATE ${tablas.DOCTORES} SET nombre = '${ data.nombre }', apellido = '${ data.apellido }', email = '${ data.email }' 
+        WHERE (idDoctor IN(${ element.idDoctor }));
+    `)
+}
+
+async function deleteDoctor(element){
+    await query(`
+        DELETE FROM ${tablas.DOCTORES} WHERE (idDoctor IN(${ element.idDoctor }));
     `);
 }
 
-async function addDoctor(data){
-    await connect.query(`
-    INSERT INTO ${ tablas.DOCTORES } (nombre, apellido, password, email) 
-        VALUES ('${data.nombre}', '${data.apellido}', '${data.password}', '${data.email}');
+async function getDoctorId(data){ 
+    return await query(`
+        SELECT idDoctor, nombre, apellido, email FROM ${ tablas.DOCTORES } WHERE idDoctor IN(${data.idDoctor});
     `);
+}
+
+async function getDoctorName(data){
+    return await query(`
+        SELECT idDoctor, nombre, apellido, email FROM ${ tablas.DOCTORES } 
+        WHERE  CONCAT(nombre, apellido) LIKE '%${data.nombre}%';
+    `)
 }
 
 module.exports	= {
-    addNewDoctor,
-    getDoctors
+    updateDataDoctor,
+    deleteDataDoctor,
+    getDoctorById,
+    getDoctorByName
+
 }
