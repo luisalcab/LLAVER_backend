@@ -18,31 +18,53 @@ const { corsOptions } = require('../utils/cors.js');
 router.post('/agregarNuevoPaciente', cors(corsOptions), authController.isAuthenticated,  addNewPatient);
 router.get('/obtenerPacienteId/:idPaciente', cors(corsOptions), authController.isAuthenticated,  getPatientById);
 router.post('/obtenerPacientesNombre', cors(corsOptions), authController.isAuthenticated, getPatientByName);
+router.post('/obtenerPacientesNombre/activo', cors(corsOptions), authController.isAuthenticated, getPatientByNameOnlyActive);
 router.put('/modificarPaciente/:idPaciente', cors(corsOptions), authController.isAuthenticated,  updateDataPatient);
+router.put('/activarStatusPaciente/:idPaciente', cors(corsOptions), authController.isAuthenticated, activateStatusById);
+router.put('/desactivarStatusPaciente/:idPaciente', cors(corsOptions), authController.isAuthenticated, desactivateStautsById);
 // Queda pendiente la eliminacion del paciente, hasta ahorita tenemos su estatus cambiara a "0"
 
 async function addNewPatient(req, res){
     res.send({
-        status: await controller.addNewPatient(req.body)
+        response: await controller.addNewPatient(req.body)
     });
 }
 
 async function getPatientById(req, res){
     res.send({
-        status: await controller.getPatientById(req.params)
+        response: await controller.getPatientById(req.params)
     });
 }
 
 async function getPatientByName(req, res){
     res.send({
-        status: await controller.getPatientByName(req.body)
+        response: await controller.getPatientByName(req.body)
     });
 }
 
+async function getPatientByNameOnlyActive(req, res){
+    res.send({
+        response: await controller.getPatientByNameOnlyActive(req.body)
+    });  
+}
+
+//Pendiente a agregar validacion
 async function updateDataPatient(req, res){
     res.send({
-        status: await controller.updateDataPatient(req.body, req.params)
+        response: await controller.updateDataPatient(req.body, req.params)
     });
+}
+
+async function activateStatusById(req, res){
+    res.send({
+        status: await controller.activateStatusById(req.params)
+    });   
+}
+
+async function desactivateStautsById(req, res){
+    res.send({
+        status: await controller.desactivateStatusById(req.params)
+    });  
 }
 
 module.exports = router;

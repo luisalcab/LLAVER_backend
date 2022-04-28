@@ -3,8 +3,14 @@ const bcryptjs = require('bcryptjs');
 const config = require('../../configPersonal.js');
 const { query } = require('../../conection_store/controllerStore.js');
 const tablas = require('../../componentes/utils/tablasDatabase.js');
+const responseFormat = require('../../componentes/utils/response.js');
 
 exports.login = async(req, res) =>{
+
+    if(req.body.email == "" && req.body.password == ""){
+        res.send({response: responseFormat.response("Un campo esta vacio", 400, 3)});
+    }
+
     const [ user ] = await query(`SELECT idDoctor, password FROM ${tablas.DOCTORES} WHERE email = "${req.body.email}";`);
     
     if(user && await bcryptjs.compare(req.body.password, user.password)){
@@ -15,13 +21,10 @@ exports.login = async(req, res) =>{
 
         const token = jwt.sign(payload, config.jwt.key, { expiresIn: config.jwt.time });
         
-        res.json({
-            mensaje: 'Autenticación correcta',
-            token: token
-        });
+        res.send({ response: responseFormat.responseData(token, 200, 0) });
 
     } else {
-        res.json({mensaje: 'Usuario o contraseña incorrecta'})
+        res.send({response: responseFormat.response('Usuario o contraseña incorrecta', 200, 0)})
     }
 }
 
@@ -30,14 +33,15 @@ exports.isAuthenticated = async(req, res, next) => {
     if (token) {
         jwt.verify(token, config.jwt.key, (err, decoded) => {
             if (err) {
-                return res.json({ mensaje: 'Token invalido' });
+                res.send({response: responseFormat.response('Sesión expirada o token no valido', 403, 0)});
             } else {
                 req.decoded = decoded
                 next();
             }
         })
     } else {
-        res.send({ mensaje: "Usuario no identificado" })
+        res.send({response: responseFormat.response('Usuario no identificado', 403, 0)});
+        // res.send({ mensaje: "Usuario no identificado" })
     }
 }
 
@@ -59,18 +63,26 @@ exports.sessionOF = async(req, res) => {
     }
 }
 
-exports.register = async(req, res) => {
-    try {
-        let passHash = await bcryptjs.hash(req.body.password, config.hash.times);
-        await query(`INSERT INTO ${ tablas.DOCTORES } (nombre, apellido, email, password) 
-        VALUES ('${req.body.nombre}', '${req.body.apellido}', '${req.body.email}', '${passHash}');`)
+exports.register = async (data) => {
+        for (const key in data){
+            if(data[key] == "") return responseFormat.response("Un campo esta vacio", 400, 3); 
+        } 
+
+        let passHash = await bcryptjs.hash(data.password, config.hash.times);
+
+        var [ verifyName ] = await query(`SELECT COUNT(idDoctor) as nameDoctor FROM ${ tablas.DOCTORES} 
+                     WHERE CONCAT(nombre, apellido) = CONCAT('${data.nombre}', '${data.apellido}')`)
+        
+        if(verifyName.nameDoctor != 0)     
+            return responseFormat.response("El 'nombre completo' que estas intentando poner ya existe", 400, 1);
+ 
+        return await query(`INSERT INTO ${ tablas.DOCTORES } (nombre, apellido, email, password) 
+                     VALUES ('${data.nombre}', '${data.apellido}', 
+                     '${data.email}', '${passHash}');`)
+        .then(() => {
+            return responseFormat.response("Se agrego el nuevo doctor", 201, 0);
+        })
         .catch((error)=>{
-            res.send({"code": error})
+            return responseFormat.response(error, 400, 2);
         });
-
-        res.send({"status": 1});
-
-    } catch (error) {
-        console.log(error)
-    }   
 }

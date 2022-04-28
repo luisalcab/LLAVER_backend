@@ -2,6 +2,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const swaggerJsDoc = require("swagger-jsdoc");
+const swaggerUI = require("swagger-ui-express");
 
 //Importando componentes
 const DOCTOR = require('./componentes/doctor/network.js');
@@ -22,6 +24,31 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(cors());
 
+
+//Swagger docuemntation
+const swaggerOptions = {
+    swaggerDefinition: {
+        info: {
+            title: "Documentacion API proyecto geriatria",
+            version: "1.0.0",
+            description: "",
+        },
+        server: ["http://localhost:3002"]
+    },
+    basePath: "/",
+    apis:   [
+                "./componentes/autenticacion/*.js",
+                "./componentes/consulta_geriatrica/*.js",
+                "./componentes/cuidador/*.js",
+                "./componentes/doctor/*.js",
+                "./componentes/paciente/*.js",
+            ]
+}
+
+const specs = swaggerJsDoc(swaggerOptions);
+
+// const swaggerDocs = swaggerJsDoc(swaggerOptions);
+app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(specs));
 
 //Componentes
 app.use('/doctor', DOCTOR);

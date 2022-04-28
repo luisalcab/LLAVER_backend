@@ -17,8 +17,13 @@ const { corsOptions } = require('../utils/cors.js');
 
 //Rutas de este componente
 router.post('/login', cors(corsOptions), authController.login);
-router.post('/register', cors(corsOptions), authController.register);
+router.post('/register', cors(corsOptions), registerProcess);
 // router.get('/sessionOf', cors(corsOptions), authController.sessionOF);
 
+async function registerProcess(req, res){
+    res.send({
+        response: await authController.register(req.body)
+    })
+}
 
 module.exports = router;

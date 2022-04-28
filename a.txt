@@ -1,0 +1,33 @@
+
+/**
+ * @swagger
+ * /consulta_geriatrica:
+ *   post:
+ *     summary: Crea una nueva consulta geriatrica.
+ *     tags: [Consulta]
+ *     responses:
+ *       200:
+ *         description: The list of the books
+ *         content:
+ *           application/json:
+ */
+
+ /**
+ * @swagger
+ * components: {
+ *   schemas: {
+ *      User: {
+ *          type: object
+ *          propierties:
+ *              name:
+ *                  type: string
+ *                  description: the user
+ *          required:
+ *              - name
+ *          example:
+ *              name: Alan
+ * 
+ *          }
+ *   }
+ * }
+ */
