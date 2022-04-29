@@ -18,9 +18,9 @@ function query(query){
                 if(err.errno == 1062)
                     error = err.sqlMessage
                     
-                console.log(err.errno)                
-                console.log(err)                
-                console.log(error)                
+                // console.log(err.errno)                
+                // console.log(err)                
+                // console.log(error)                
                 return reject(error);
             }else {
                 return resolve(result);

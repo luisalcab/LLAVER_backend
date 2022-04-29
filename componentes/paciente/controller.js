@@ -18,7 +18,7 @@ async function addNewPatient(data){
             return responseFormat.response(error, 400, 3)
         });
     } else {
-        return responseFormat.response("El \"nombre completo\" que se esta intentando poner ya existe", 400, 2);
+        return responseFormat.response("El 'nombre completo' que se esta intentando poner ya existe", 400, 2);
     }
 }
 

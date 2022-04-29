@@ -20,10 +20,10 @@ router.get('/obtenerExamenes', cors(corsOptions), authController.isAuthenticated
 router.get('/obtenerExamen/:idConsulta/:idPaciente/:idExamen', cors(corsOptions), authController.isAuthenticated, getExamnQuestionsById);
 router.post('/obtenerExamen/:idConsulta/:idPaciente/:idExamen', cors(corsOptions), authController.isAuthenticated, setExamnQuestions);
 router.get('/obtenerExamenPasado/:idConsulta/:idExamen', cors(corsOptions), authController.isAuthenticated, getExamnPastQuestions);
-
-//Implementar
-router.post('/buscarConsultaGeriatrica', cors(corsOptions), authController.isAuthenticated, searchGeriatricConsults)
-// router.post('/obtenerConsultaGeriatrica', cors(corsOptions), authController.isAuthenticated)
+router.post('/buscarConsultaGeriatrica', cors(corsOptions), authController.isAuthenticated, searchGeriatricConsults);
+router.get('/obtenerConsultaGeriatrica/Pendiente', cors(corsOptions), authController.isAuthenticated, getAllGeriatricConsultPending);
+router.get('/obtenerConsultaGeriatrica/:idConsulta', cors(corsOptions), authController.isAuthenticated, getGeriatricConsultById);
+router.put('/terminarConsultaGeriatrica/:idConsulta', cors(corsOptions), authController.isAuthenticated, finishGeriatricConsultById)
 
 async function createNewConsult(req, res){
     res.send({ 
@@ -61,4 +61,21 @@ async function searchGeriatricConsults(req, res){
     })
 }
 
+async function getGeriatricConsultById(req, res){
+    res.send({
+        response: await controller.getGeriatricConsultById(req.params)
+    })
+}
+
+async function finishGeriatricConsultById(req, res){
+    res.send({
+        response: await controller.finishGeriatricConsultById(req.params)
+    })
+}
+
+async function getAllGeriatricConsultPending(req, res){
+    res.send({
+        response: await controller.getAllGeriatricConsultPending()
+    })
+}
 module.exports = router;
