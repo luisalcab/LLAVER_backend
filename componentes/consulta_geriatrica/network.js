@@ -25,6 +25,10 @@ router.get('/obtenerConsultaGeriatrica/Pendiente', cors(corsOptions), authContro
 router.get('/obtenerConsultaGeriatrica/:idConsulta', cors(corsOptions), authController.isAuthenticated, getGeriatricConsultById);
 router.put('/terminarConsultaGeriatrica/:idConsulta', cors(corsOptions), authController.isAuthenticated, finishGeriatricConsultById)
 
+//Notas
+router.get('/obtenerNotasConsulta/:idConsulta', cors(corsOptions), authController.isAuthenticated, getAllnotesOfAConsult);
+router.put('/modificarNota/:idConsulta/:idExamen', cors(corsOptions), authController.isAuthenticated, modifyNoteById)
+
 async function createNewConsult(req, res){
     res.send({ 
         response:  await controller.createNewConsult(req.body, await authController.sessionOF(req, res))
@@ -58,24 +62,36 @@ async function getExamnPastQuestions(req, res){
 async function searchGeriatricConsults(req, res){
     res.send({
         response: await controller.searchGeriatricConsults(req.body)
-    })
+    });
 }
 
 async function getGeriatricConsultById(req, res){
     res.send({
         response: await controller.getGeriatricConsultById(req.params)
-    })
+    });
 }
 
 async function finishGeriatricConsultById(req, res){
     res.send({
         response: await controller.finishGeriatricConsultById(req.params)
-    })
+    });
 }
 
 async function getAllGeriatricConsultPending(req, res){
     res.send({
         response: await controller.getAllGeriatricConsultPending()
+    });
+}
+
+async function getAllnotesOfAConsult(req, res){
+    res.send({
+        response: await controller.getAllnotesOfAConsult(req.params)
+    });
+}
+
+async function modifyNoteById(req, res){
+    res.send({
+        response: await controller.modifyNoteById(req.body, req.params)
     })
 }
 module.exports = router;

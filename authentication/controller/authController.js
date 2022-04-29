@@ -8,7 +8,7 @@ const responseFormat = require('../../componentes/utils/response.js');
 exports.login = async(req, res) =>{
 
     if(req.body.email == "" && req.body.password == ""){
-        res.send({response: responseFormat.response("Un campo esta vacio", 400, 3)});
+        res.send({response: responseFormat.response("Un campo esta vacio", 400, 2)});
     }
 
     const [ user ] = await query(`SELECT idDoctor, password FROM ${tablas.DOCTORES} WHERE email = "${req.body.email}";`);
@@ -24,7 +24,7 @@ exports.login = async(req, res) =>{
         res.send({ response: responseFormat.responseData(token, 200, 0) });
 
     } else {
-        res.send({response: responseFormat.response('Usuario o contraseña incorrecta', 200, 0)})
+        res.send({response: responseFormat.response('Usuario o contraseña incorrecta', 200, 1)})
     }
 }
 

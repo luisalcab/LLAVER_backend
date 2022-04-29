@@ -46,46 +46,47 @@ async function getPatientById(element){
 }
 
 async function getPatientByName(data){
-    if(data.nombre == "")  return responseFormat.response("El campo de esta vacio", 400, 1); 
+    // if(data.nombre == "")  return responseFormat.response("El campo de esta vacio", 400, 1); 
 
-    let resData = await getPatientName(data);
-    if(resData[0] != undefined){
-        return responseFormat.responseData(
-            resData,
-            200,
-            2
-        )
-    } else {
-        return responseFormat.responseData(
-            [],
-            404,
-            0
-        )
-    }
-}
+    let searchActiveAndInactives = "AND status = 1";
 
-async function getPatientByNameOnlyActive(data){
-    if(data.nombre == "")  return responseFormat.response("El campo de esta vacio", 400, 1); 
+    if(data.ademasInactivos == 1)
+        searchActiveAndInactives = ""
 
-    let resData = await getPatientNameOnlyActive(data);
-    if(resData[0] != undefined){
-        return responseFormat.responseData(
-            resData,
-            200,
-            2
-        )
-    } else {
-        return responseFormat.responseData(
-            [],
-            404,
-            0
-        )
-    } 
+    return await getPatientName(data, searchActiveAndInactives)
+    .then((values) => {
+        return responseFormat.responseData(values, 200, 0);
+    })
+    .catch((error) => {
+        return responseFormat.response(error, 400, 3);
+    });
 }
 
 async function updateDataPatient(data, element){
-    await updatePatient(data, element);
-    return 1
+    let [ currentPatient ] = await getPatientId(element);
+    
+    //Fill all the empty fields
+    for (const key in data) 
+        if(data[key] != "")
+            currentPatient[key] = data[key]
+
+    
+    //Verify that the name does not exist
+    if(data.nombre != "" || data.apellido != ""){
+        let [ existPatient ] = await verifyRepitName(currentPatient);
+        if (existPatient.patients > 0){
+            return responseFormat.response("Se esta intentando poner un nombre que ya existe", 200, 1)
+        }
+    }
+
+    return await updatePatient(currentPatient, element)
+    .then(() => {
+        return responseFormat.response("Paciente modificado exitosamente", 200, 0);
+    })
+    .catch((error) => {
+        return responseFormat.response(error, 400, 3);
+    });
+    
 }
 
 async function activateStatusById(element){
@@ -94,7 +95,7 @@ async function activateStatusById(element){
         return responseFormat.response("Se ha cambiado el estatus a 'activo' del paciente", 200, 0);
     })
     .catch((error) => {
-        return responseFormat.response(error, 400, 1);
+        return responseFormat.response(error, 400, 3);
     })
 }
 
@@ -104,11 +105,9 @@ async function desactivateStatusById(element){
         return responseFormat.response("Se ha cambiado el estatus a 'desactivo' del paciente", 200, 0);
     })
     .catch((error) => {
-        return responseFormat.response(error, 400, 1);
+        return responseFormat.response(error, 400, 3);
     });
 }
-
-
 
 //Queries
 async function addPatient(data){
@@ -126,20 +125,11 @@ async function getPatientId(element){
     `);
 }
 
-async function getPatientName(data){
+async function getPatientName(data, searchActiveAndInactives){
     return await query(`
         SELECT idPaciente, nombre, apellido, escolaridad, fechaNacimiento, sexo, idDoctor, status
         FROM ${ tablas.PACIENTES } 
-        WHERE  CONCAT(nombre, apellido) LIKE '%${data.nombre}%';
-    `);
-}
-
-async function getPatientNameOnlyActive(data){
-    return await query(`
-        SELECT idPaciente, nombre, apellido, escolaridad, fechaNacimiento, sexo, idDoctor 
-        FROM ${ tablas.PACIENTES } 
-        WHERE status = 1 AND CONCAT(nombre, apellido) LIKE '%${data.nombre}%';
-
+        WHERE  CONCAT(nombre, apellido) LIKE '%${ data.nombre }%' ${ searchActiveAndInactives };
     `);
 }
 
@@ -153,7 +143,8 @@ async function updatePatient(data, element){
 }
 
 async function verifyRepitName(data){
-    return await query(`SELECT COUNT(idPaciente) AS patients FROM pacientes WHERE CONCAT(nombre, apellido) = CONCAT('${ data.nombre }', '${ data.apellido }')`); 
+    return await query(`SELECT COUNT(idPaciente) AS patients FROM ${ tablas.PACIENTES } 
+                        WHERE CONCAT(nombre, apellido) = CONCAT('${ data.nombre }', '${ data.apellido }')`); 
 }
 
 async function activateStatus(element){
@@ -169,12 +160,12 @@ async function desactivateStatus(element){
         WHERE (idPaciente IN(${ element.idPaciente }));
     `);
 }
+
 module.exports	= {
     addNewPatient,
     getPatientById,
     getPatientByName,
     updateDataPatient,
-    getPatientByNameOnlyActive,
     activateStatusById,
     desactivateStatusById
 }

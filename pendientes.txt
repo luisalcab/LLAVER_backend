@@ -1,0 +1,4 @@
+1 - Agregar una verificacion para que el doctor que inice la consulta, termine la consulta
+2 - Agregar una verificacion para que un doctor con status inactivo no pueda modificar nada (ademas de no crear nuevas consultas)
+3 - Que pasa si a la mitad de una consulta el doctor cambia a status 0?? (que no pueda abrir pero si cerrar consultas??)
+4 - Si ya hizo el examen una vez, se tiene que desabilitar esa opcion
