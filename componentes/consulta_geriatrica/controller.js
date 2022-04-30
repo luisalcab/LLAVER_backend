@@ -2,8 +2,7 @@
 const { query } = require('../../conection_store/controllerStore.js');
 const tablas = require('../utils/tablasDatabase.js');
 const responseFormat = require('../utils/response.js');
-const { EXAMENES } = require('../utils/tablasDatabase.js');
-const { format } = require('express/lib/response');
+
 async function createNewConsult(data, element){
     for (const key in data){
         if(data[key] == "") return responseFormat.response("Un campo esta vacio", 400, 1); 
@@ -83,26 +82,24 @@ async function getExamnQuestionsById(element){
 }
 
 async function setExamnQuestions(data, element){
-
-
     //Verify if there is not an empty element component of the answer
     let verify = 0;
     data.respuestasExamen.forEach(element => {
         for (const key in element) {
             if(element[key] == ""){
-                verify = 1
+                verify = 1;
                 break;
             }
         }
     });
 
     if(verify)
-        return responseFormat.response("No puede haber ningun elemento vacío", 400, 1)
+        return responseFormat.response("No puede haber ningun elemento vacío", 400, 1);
 
     //Add exam that was done
     return await setExamn(data, element)
-    .then(async (data) => {
-        if(data[0] == undefined){
+    .then(async (value) => {
+        if(value[0] == undefined){
             // Add answers
             await data.respuestasExamen.forEach(async dataRow => {
                 await setExamnAnswers(dataRow, element)
@@ -240,8 +237,18 @@ async function searchGeriatricConsults(data){
 
 async function getGeriatricConsultById(element){
     return await getGeriatricConsult(element)
-    .then((data) => {
-        return responseFormat.responseData(data, 200, 0);
+    .then(async (consult) => {
+        return await getExamnNotesConsult(element)
+        .then((examns) => {
+            consult.push(examns)
+            return responseFormat.responseData(
+                consult, 
+                200, 0);
+
+        })
+        .catch((error) => {
+            return responseFormat.response(error, 400, 3);
+        });
     })
     .catch((error) => {
         return responseFormat.response(error, 400, 3);
@@ -270,7 +277,7 @@ async function getAllGeriatricConsultPending(){
 }
 
 async function getAllnotesOfAConsult(element){
-    return await getNotesConsult(element)
+    return await getExamnNotesConsult(element)
     .then((data) => {
         return responseFormat.responseData(data, 200, 0);
     })
@@ -280,8 +287,15 @@ async function getAllnotesOfAConsult(element){
 }
 
 async function modifyNoteById(data, element){
+    if(data.nota == undefined)
+        return responseFormat.response("no hubo información para actualizar", 400, 1)
+
     if(data.nota == "")
         return responseFormat.response("no hubo información para actualizar", 400, 1)
+
+    if(typeof(data.nota)=="object")
+        return responseFormat.response("no se pueden almacenar objetos", 400, 2)
+
 
     return await updateNote(data, element)
     .then(() => {
@@ -300,6 +314,17 @@ async function sumTotalevaluationMinimental(element){
     if(patient.escolaridad <= 3) totalExamn.puntajeTotal += 8;
     
     return totalExamn.puntajeTotal;
+}
+
+async function deleteConsultById(element){
+    return await deleteConsult(element)
+                    .then(() => {
+                        return responseFormat.response("Se elimino exitosamente la consulta geriatrica (y tambien las respuestas a los examenes)", 200, 0)
+                    })
+                    .catch((error) => {
+                        return responseFormat.response(error, 400, 3)
+                        
+                    })
 }
 
 // Queries
@@ -344,6 +369,7 @@ async function setExamn(data, element){
 }
 
 async function setExamnAnswers(data, element){
+    console.log("query para guardar")
     await query(`CALL spCreateNewAnswer(${ element.idConsulta }, ${ data.idPregunta }, 
         '${ data.respuesta }', ${ data.puntaje }, ${ data.imagen });`);
 }
@@ -378,19 +404,29 @@ async function searchConsults(element){
 async function getGeriatricConsult(element){
     return await query(`
         SELECT A.idConsulta, A.fechaConsulta, A.consultaTerminada, B.idPaciente, B.nombre AS nombrePaciente, 
-        B.apellido AS apellidoPaciente, C.idDoctor, C.nombre AS nombreDoctor, C.apellido AS apellidoDoctor,
-        D.idExamen, D.notas, E.nombreExamen
+        B.apellido AS apellidoPaciente, C.idDoctor, C.nombre AS nombreDoctor, C.apellido AS apellidoDoctor
             FROM ${ tablas.CONSULTA_GERIATRICA } AS A
             JOIN ${ tablas.PACIENTES } AS B
             ON A.idPaciente = B.idPaciente
             JOIN ${ tablas.DOCTORES } AS C
             ON A.idDoctor = C.idDoctor
-            LEFT JOIN ${ tablas.EXAMENES_REALIZADOS } AS D
-            ON A.idConsulta = D.idConsulta
-            LEFT JOIN ${ tablas.EXAMENES } AS E
-            ON D.idExamen = E.idExamen
             WHERE A.idConsulta IN(${element.idConsulta});
     `);
+    // return await query(`
+    //     SELECT A.idConsulta, A.fechaConsulta, A.consultaTerminada, B.idPaciente, B.nombre AS nombrePaciente, 
+    //     B.apellido AS apellidoPaciente, C.idDoctor, C.nombre AS nombreDoctor, C.apellido AS apellidoDoctor,
+    //     D.idExamen, D.notas, E.nombreExamen
+    //         FROM ${ tablas.CONSULTA_GERIATRICA } AS A
+    //         JOIN ${ tablas.PACIENTES } AS B
+    //         ON A.idPaciente = B.idPaciente
+    //         JOIN ${ tablas.DOCTORES } AS C
+    //         ON A.idDoctor = C.idDoctor
+    //         LEFT JOIN ${ tablas.EXAMENES_REALIZADOS } AS D
+    //         ON A.idConsulta = D.idConsulta
+    //         LEFT JOIN ${ tablas.EXAMENES } AS E
+    //         ON D.idExamen = E.idExamen
+    //         WHERE A.idConsulta IN(${element.idConsulta});
+    // `);
 }
 
 async function finishGeriatricConsult(element){
@@ -415,13 +451,13 @@ async function getGeriatricConsultPending(element){
     `)
 }
 
-async function getNotesConsult(element){
+async function getExamnNotesConsult(element){
     return query(`
         SELECT A.idConsulta, A.fechaConsulta, B.notas, C.idExamen, C.nombreExamen 
         FROM ${ tablas.CONSULTA_GERIATRICA } AS A
         JOIN ${ tablas.EXAMENES_REALIZADOS} AS B
         ON A.idConsulta = B.idConsulta
-        JOIN ${ tablas,EXAMENES } AS C
+        JOIN ${ tablas.EXAMENES } AS C
         ON B.idExamen = C.idExamen
         WHERE A.idConsulta = ${ element.idConsulta }
     `)
@@ -430,6 +466,10 @@ async function getNotesConsult(element){
 async function updateNote(data, element){
     return await query(`UPDATE ${ tablas.EXAMENES_REALIZADOS } SET notas = "${ data.nota }" 
             WHERE idConsulta = ${ element.idConsulta } AND idExamen = ${ element.idExamen };`);
+}
+
+async function deleteConsult(element){
+    return await query(`DELETE FROM ${ tablas.CONSULTA_GERIATRICA } WHERE idConsulta = ${ element.idConsulta }`)
 }
 
 //Otros queries ---
@@ -441,10 +481,6 @@ async function getPatientId(element){
 }
 
 async function getDoctorId(data){ 
-    console.log(data)
-    console.log(`
-    SELECT  idDoctor, nombre, apellido, email, status FROM ${ tablas.DOCTORES } WHERE idDoctor IN(${data.idDoctor});
-`);
     return await query(`
         SELECT  idDoctor, nombre, apellido, email, status FROM ${ tablas.DOCTORES } WHERE idDoctor IN(${data.idDoctor});
     `);
@@ -461,5 +497,6 @@ module.exports	= {
     finishGeriatricConsultById,
     getAllGeriatricConsultPending,
     getAllnotesOfAConsult,
-    modifyNoteById
+    modifyNoteById,
+    deleteConsultById
 }

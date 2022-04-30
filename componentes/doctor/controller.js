@@ -65,9 +65,14 @@ async function updateDataDoctor(data, element){
     // })
 }
 
-async function deleteDataDoctor(element){
-    await deleteDoctor(element);
-    return 1;
+async function deleteDoctorById(element){
+    return await deleteDoctor(element)
+    .then(() => {
+        return responseFormat.response("Se ha borrado el doctor (y sus respectivas pacientes con sus consultas)", 200, 0);
+    })
+    .catch((error) => {
+        return responseFormat.response(error, 400, 3);
+    });
 }
 
 async function getDoctorById(data){
@@ -165,7 +170,7 @@ async function desactivateStatus(element){
 
 module.exports	= {
     updateDataDoctor,
-    deleteDataDoctor,
+    deleteDoctorById,
     getDoctorById,
     getDoctorByName,
     activateStatusById,

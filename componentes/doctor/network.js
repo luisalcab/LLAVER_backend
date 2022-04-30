@@ -19,8 +19,10 @@ router.put('/modificar/:idDoctor', cors(corsOptions), authController.isAuthentic
 router.delete('/eliminar/:idDoctor', cors(corsOptions), authController.isAuthenticated, deleteDataDoctor);
 router.get('/obtenerDoctorId/:idDoctor', cors(corsOptions), authController.isAuthenticated, getDoctorId);
 router.post('/obtenerDoctoresNombre', cors(corsOptions), authController.isAuthenticated, getDoctorName);
-router.put('/activarStatusDoctor/:idDoctor', cors(corsOptions), authController.isAuthenticated, activateStatusById)
-router.put('/desactivarStatusPaciente/:idDoctor', cors(corsOptions), authController.isAuthenticated, desactivateStautsById)
+router.put('/activarStatusDoctor/:idDoctor', cors(corsOptions), authController.isAuthenticated, activateStatusById);
+router.put('/desactivarStatusPaciente/:idDoctor', cors(corsOptions), authController.isAuthenticated, desactivateStautsById);
+router.delete('/eliminarDoctor/:idDoctor', cors(corsOptions), authController.isAuthenticated, deleteDoctorById);
+
 async function updateDataDoctor(req, res){
     res.send({
         response: await controller.updateDataDoctor(req.body, req.params)
@@ -55,5 +57,11 @@ async function desactivateStautsById(req, res){
     res.send({
         response: await controller.desactivateStatusById(req.params)
     });  
+}
+
+async function deleteDoctorById(req, res){
+    res.send({
+        response: await controller.deleteDoctorById(req.params)
+    });
 }
 module.exports = router;

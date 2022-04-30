@@ -131,6 +131,16 @@ async function desactivateStatusById(element){
     });
 }
 
+
+async function deletePacienteById(element){
+    return await deletePaciente(element)
+    .then(() => {
+        return responseFormat.response("Se ha borrado el paciente (y sus respectivas consultas)", 200, 0);
+    })
+    .catch((error) => {
+        return responseFormat.response(error, 400, 3);
+    });
+}
 //Queries
 async function addPatient(data){
     await query(`
@@ -183,11 +193,18 @@ async function desactivateStatus(element){
     `);
 }
 
+async function deletePaciente(element){
+    await query(`
+        DELETE FROM ${ tablas.PACIENTES } WHERE idPaciente IN(${ element.idPaciente });
+    `);
+}
+
 module.exports	= {
     addNewPatient,
     getPatientById,
     getPatientByName,
     updateDataPatient,
     activateStatusById,
-    desactivateStatusById
+    desactivateStatusById,
+    deletePacienteById
 }

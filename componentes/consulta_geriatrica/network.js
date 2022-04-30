@@ -24,6 +24,7 @@ router.post('/buscarConsultaGeriatrica', cors(corsOptions), authController.isAut
 router.get('/obtenerConsultaGeriatrica/Pendiente', cors(corsOptions), authController.isAuthenticated, getAllGeriatricConsultPending);
 router.get('/obtenerConsultaGeriatrica/:idConsulta', cors(corsOptions), authController.isAuthenticated, getGeriatricConsultById);
 router.put('/terminarConsultaGeriatrica/:idConsulta', cors(corsOptions), authController.isAuthenticated, finishGeriatricConsultById)
+router.delete('/eliminarConsulta/:idConsulta', cors(corsOptions), authController.isAuthenticated, deleteConsultById);
 
 //Notas
 router.get('/obtenerNotasConsulta/:idConsulta', cors(corsOptions), authController.isAuthenticated, getAllnotesOfAConsult);
@@ -93,5 +94,11 @@ async function modifyNoteById(req, res){
     res.send({
         response: await controller.modifyNoteById(req.body, req.params)
     })
+}
+
+async function deleteConsultById(req, res){
+    res.send({
+        response: await controller.deleteConsultById(req.params)
+    })   
 }
 module.exports = router;

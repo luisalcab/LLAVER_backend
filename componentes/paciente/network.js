@@ -21,6 +21,7 @@ router.post('/obtenerPacientesNombre', cors(corsOptions), authController.isAuthe
 router.put('/modificarPaciente/:idPaciente', cors(corsOptions), authController.isAuthenticated,  updateDataPatient);
 router.put('/activarStatusPaciente/:idPaciente', cors(corsOptions), authController.isAuthenticated, activateStatusById);
 router.put('/desactivarStatusPaciente/:idPaciente', cors(corsOptions), authController.isAuthenticated, desactivateStautsById);
+router.delete('/eliminarPaciente/:idPaciente', cors(corsOptions), authController.isAuthenticated, deletePacienteById)
 // Queda pendiente la eliminacion del paciente, hasta ahorita tenemos su estatus cambiara a "0"
 
 async function addNewPatient(req, res){
@@ -60,4 +61,9 @@ async function desactivateStautsById(req, res){
     });  
 }
 
+async function deletePacienteById(req, res){
+    res.send({
+        response: await controller.deletePacienteById(req.params)
+    });  
+}
 module.exports = router;
