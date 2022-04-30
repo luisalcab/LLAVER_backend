@@ -17,7 +17,7 @@ const { corsOptions } = require('../utils/cors.js');
 //Rutas de este componente
 router.post('/crearNuevaConsulta', cors(corsOptions), authController.isAuthenticated, createNewConsult);
 router.get('/obtenerExamenes', cors(corsOptions), authController.isAuthenticated, getAllExamns);
-router.get('/obtenerExamen/:idConsulta/:idPaciente/:idExamen', cors(corsOptions), authController.isAuthenticated, getExamnQuestionsById);
+router.get('/obtenerExamen/:idExamen', cors(corsOptions), authController.isAuthenticated, getExamnQuestionsById);
 router.post('/obtenerExamen/:idConsulta/:idPaciente/:idExamen', cors(corsOptions), authController.isAuthenticated, setExamnQuestions);
 router.get('/obtenerExamenPasado/:idConsulta/:idExamen', cors(corsOptions), authController.isAuthenticated, getExamnPastQuestions);
 router.post('/buscarConsultaGeriatrica', cors(corsOptions), authController.isAuthenticated, searchGeriatricConsults);
@@ -50,7 +50,7 @@ async function getExamnQuestionsById(req, res){
 
 async function setExamnQuestions(req, res){
     res.send({
-        status: await controller.setExamnQuestions(req.body, req.params)
+        response: await controller.setExamnQuestions(req.body, req.params)
     });
 }
 

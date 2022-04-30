@@ -82,15 +82,22 @@ var registers = [
 
   }, //10 - JSON vacio - OK
   {
-    "apellido": `Gomez${Math.random()}`,
-    "nombre": `Flor${Math.random()}`,
+  "apellido": `Gomez${Math.random()}`,
+  "nombre": `Flor${Math.random()}`,
 	"fechaNacimiento": `2021-04-05`,
 	"idDoctor": `48`,
 	"sexo": `0`,
 	"escolaridad": `6`,
-  } //11 - JSON en desorden - OK
+  }, //11 - JSON en desorden - OK
+  {
+    "apellido": `Gomez${Math.random()}`,
+    "nombre": `Flor${Math.random()}`,
+	"fechaNacimiento": `2011-01-03T06:00:00.000Z`,
+	"idDoctor": `48`,
+	"sexo": `0`,
+	"escolaridad": `6`,
+  } //12 - Fecha formato JS - OK
 ]
-
 
 async function login(credentials){
     return await fetch (`${url}/autenticacion/login`, {

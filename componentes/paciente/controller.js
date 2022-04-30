@@ -4,13 +4,22 @@ const tablas = require('../utils/tablasDatabase.js');
 const responseFormat = require('../utils/response.js');
 const preventions = require('../utils/preventions.js');
 const moment = require('moment');
+
 async function addNewPatient(data){
+    if (JSON.stringify(data) === '{}')
+        return responseFormat.response("No hubo información para agregar el nuevo paciente", 400, 4)
+     
+
     for (const key in data){
         if(data[key] == "") return responseFormat.response("Un campo esta vacio", 400, 1); 
     } 
         
     let [ existName ] = await verifyRepitName(data);
     if(existName.patients==0){
+            console.log(data)
+            //Giving correct format for the date 
+            data.fechaNacimiento = await moment().format(await JSON.stringify(data.fechaNacimiento));
+            data.fechaNacimiento = JSON.parse(data.fechaNacimiento)
         return await addPatient(data)
         .then(() => {
             return responseFormat.response("Se ha agregado al paciente exitosamente", 201, 0);
@@ -141,6 +150,7 @@ async function deletePacienteById(element){
         return responseFormat.response(error, 400, 3);
     });
 }
+
 //Queries
 async function addPatient(data){
     await query(`

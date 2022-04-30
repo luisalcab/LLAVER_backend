@@ -1,36 +1,116 @@
 'use strict'
-const connect = require('../../conection_store/controllerStore.js');
-// const tablas = require('../../utils/tablasDatabase.js');
+const { query } = require('../../conection_store/controllerStore.js');
 const tablas = require('../utils/tablasDatabase.js');
+const responseFormat = require('../utils/response.js');
 
-async function getDoctors(){
-    return await getAllDoctors();
-}
-
-async function addNewDoctor(data){
-    if(data.nombre == ""){
-        return 2 //Algun dato esta vacio        
+async function addNewCarer(data){
+    for (const key in data){
+        if(data[key] == "") return responseFormat.response("Un campo esta vacio", 400, 1); 
+    } 
+        
+    let [ existName ] = await verifyRepitName(data);
+    if(existName.carers==0){
+        return await addCarer(data)
+        .then(() => {
+            return responseFormat.response("Se ha agregado al cuidador exitosamente", 201, 0);
+        })
+        .catch((error) => {
+            return responseFormat.response(error, 400, 3)
+        });
     } else {
-        await addDoctor(data);
-        return 1; //Todo ok
+        return responseFormat.response("El \"nombre completo\" que se esta intentando poner ya existe", 400, 2);
     }
 }
 
-// Queries
-async function getAllDoctors(){ 
-    return await connect.query(`
-        SELECT * FROM ${ tablas.DOCTORES };
+async function getCarerById(element){
+    return await getCarerId(element)
+    .then((data) => {
+        if(data[0] != undefined){
+            return responseFormat.responseData(
+                data,
+                200,
+                1
+            )
+        } else {
+            return responseFormat.responseData(
+                [],
+                200,
+                0
+            )
+        }
+    })
+    .catch((error) => {
+        return responseFormat.response(error, 400, 2);
+    });
+
+}
+
+async function getCarerByName(data){
+    if(data.nombre == "")  return responseFormat.response("El campo de esta vacio", 400, 1); 
+
+    let resData = await getCarerName(data);
+    if(resData[0] != undefined){
+        return responseFormat.responseData(
+            resData,
+            200,
+            2
+        )
+    } else {
+        return responseFormat.responseData(
+            [],
+            404,
+            0
+        )
+    }
+}
+
+
+async function updateDataCarer(data, element){
+    await updateCarer(data, element);
+    return 1
+}
+
+//Queries
+async function addCarer(data){
+    await query(`
+        INSERT INTO ${ tablas.CUIDADORES } (nombre, apellido, telefono) 
+            VALUES 
+        ('${ data.nombre }', '${ data.apellido }', '${ data.telefono }');
     `);
 }
 
-async function addDoctor(data){
-    await connect.query(`
-    INSERT INTO ${ tablas.DOCTORES } (nombre, apellido, password, email) 
-        VALUES ('${data.nombre}', '${data.apellido}', '${data.password}', '${data.email}');
+async function getCarerId(element){
+    return await query(`
+        SELECT idCuidador, nombre, apellido, telefono 
+        FROM ${ tablas.CUIDADORES } 
+        WHERE idCuidador IN(${element.idCuidador});
     `);
+}
+
+async function getCarerName(data){
+    return await query(`
+        SELECT idCuidador, nombre, apellido, telefono
+        FROM ${ tablas.CUIDADORES } 
+        WHERE  CONCAT(nombre, apellido) LIKE '%${data.nombre}%';
+    `);
+}
+
+
+async function updateCarer(data, element){
+    await query(`
+        UPDATE ${ tablas.CUIDADORES } SET 
+        nombre = '${ data.nombre }', apellido = '${ data.apellido }', telefono = '${ data.telefono }'
+        WHERE (idCuidador IN(${ element.idCuidador }));
+    `);
+}
+
+async function verifyRepitName(data){
+    return await query(`SELECT COUNT(idPaciente) AS carers FROM pacientes WHERE CONCAT(nombre, apellido) = CONCAT('${ data.nombre }', '${ data.apellido }')`); 
 }
 
 module.exports	= {
-    addNewDoctor,
-    getDoctors
+    addNewCarer,
+    getCarerById,
+    getCarerByName,
+    updateDataCarer
 }

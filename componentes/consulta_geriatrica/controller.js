@@ -2,27 +2,45 @@
 const { query } = require('../../conection_store/controllerStore.js');
 const tablas = require('../utils/tablasDatabase.js');
 const responseFormat = require('../utils/response.js');
+const prevention = require('../utils/preventions.js');
+const moment = require('moment');
+
 
 async function createNewConsult(data, element){
-    for (const key in data){
-        if(data[key] == "") return responseFormat.response("Un campo esta vacio", 400, 1); 
-    }  
-    
-    let [ patient ] = await getPatientId(data);
-    if(patient.status == 0)
-        return responseFormat.response("Se esta intentando crear una consulta para un paciente con status inactivo", 200, 2); 
-    
-    let [ doctor ] = await getDoctorId({idDoctor: element});
-    if(doctor.status == 0)
-        return responseFormat.response("No se puede crear una consulta para un doctor con estatus inactivo", 200, 2); 
-    
-    return await createConsult(data, element)
-    .then(([ [ data ] ]) => {
-        if(data.repetido != undefined){
-            return responseFormat.response("Se esta intentando agregar la misma consulta 2 veces", 200, 2);
-        } else {
-            return responseFormat.responseData(data, 200, 0);
-        }
+    let resultPrevention = prevention.voidJson(["fechaConsulta", "idPaciente"], data);
+
+    if (resultPrevention != 0)
+        return responseFormat.response("JSON invalido", 400, 6);
+
+    return await getPatientId(data)
+    .then(async ([ patient ]) => {
+        if(patient == undefined)
+            return responseFormat.response("No existe el paciente al que se esta intentando agregar una consulta", 400, 5); 
+
+        if(patient.status == 0)
+            return responseFormat.response("Se esta intentando crear una consulta para un paciente con status inactivo", 400, 4); 
+
+        return await getDoctorId({idDoctor: element})
+        .then(async ([ doctor ]) => {
+            if(doctor.status == 0)
+                return responseFormat.response("No se puede crear una consulta para un doctor con estatus inactivo", 200, 2);
+
+            //Giving correct format for the date 
+            data.fechaConsulta = await moment().format(await JSON.stringify(data.fechaConsulta));
+            data.fechaConsulta = JSON.parse(data.fechaConsulta)
+
+            return await createConsult(data, element)
+            .then(async ([ [ data ] ]) => {
+                if(data.repetido != undefined){
+                    return responseFormat.response("Se esta intentando agregar la misma consulta 2 veces", 400, 1);
+                } else {
+                    return responseFormat.responseData(data, 200, 0);
+                }
+            })
+            .catch((error) => {
+                return responseFormat.response(error, 400, 3);
+            });                
+        });
     })
     .catch((error) => {
         return responseFormat.response(error, 400, 3);
@@ -40,22 +58,6 @@ async function getAllExamns(){
 }
 
 async function getExamnQuestionsById(element){
-    // var [ examn ] = await getExamenId(element);
-    // var examnSections = await getExamnSection(element);
-    
-    // var questions = [];
-    // for(var i=0; i< examnSections.length; i++){
-        
-    //     questions = await getQuestions(examnSections[i]);
-    //     examnSections[i]['preguntas'] = questions; 
-    // }
-
-    // var examnComplete = {
-    //     examn,
-    //     examnSections
-    // }
-
-    // return examnComplete; 
     var examn = await getExamenId(element)
     .then(([ examn ]) => {
         return  getExamnSection(element)
@@ -82,11 +84,36 @@ async function getExamnQuestionsById(element){
 }
 
 async function setExamnQuestions(data, element){
+    //Validate if the root json is correst
+    let resultPrevention = prevention.voidJson(["respuestasExamen", "notas"], data)
+    if(resultPrevention != 0)
+        return responseFormat.response("JSON no permitido", 400, 2);
+    
+    //Validate that the note doesn't be a object  
+    if(typeof(data.notas) != "string")
+        return responseFormat.response("No se pueden guardar objetos compuestos en las notas", 400, 4);
+    
+    //Validate that "data.respuestasExamen" be an []
+    if(!Array.isArray(data.respuestasExamen))
+        return responseFormat.response("Para las respuestas de un examen se pasa un array de jsons...", 400, 5);
+    
+    //Validate that the answers array isn't empty
+    if(data.respuestasExamen[0] == undefined)
+        return responseFormat.response("El array de respuestas esta vacio", 400, 6);
+
+    //Validate if the answers have the correct json format
+    await data.respuestasExamen.forEach(element => {
+        resultPrevention = prevention.voidJson(["idPregunta", "respuesta", "puntaje", "imagen"], element)
+        if(resultPrevention != 0)
+            return responseFormat.response("JSON no permitido (incorrecto formato de respuesta)", 400, 2);
+    });
+        
     //Verify if there is not an empty element component of the answer
     let verify = 0;
-    data.respuestasExamen.forEach(element => {
+    // console.log(data.respuestasExamen)
+    await data.respuestasExamen.forEach(element => {
         for (const key in element) {
-            if(element[key] == ""){
+            if(element[key] == "" && element[key] != 0){
                 verify = 1;
                 break;
             }
@@ -94,48 +121,68 @@ async function setExamnQuestions(data, element){
     });
 
     if(verify)
-        return responseFormat.response("No puede haber ningun elemento vacío", 400, 1);
+        return responseFormat.response("No puede haber ningun elemento vacío", 400, 7);
 
-    //Add exam that was done
-    return await setExamn(data, element)
-    .then(async (value) => {
-        if(value[0] == undefined){
-            // Add answers
-            await data.respuestasExamen.forEach(async dataRow => {
-                await setExamnAnswers(dataRow, element)
-            });
-            //Get total evaluation
-            return responseFormat.responseData(await sumTotalevaluationMinimental(element), 200, 0)
-        } else {
-            return responseFormat.response("Se esta intentando hacer otro examen del mismo tipo, para la misma consulta", 300, 1)
-
-        }
-    }).catch((error) =>{ 
-        return responseFormat.response(error, 400, 3);
-    });
-
-    
-}
-
-// async function getExamnAnswerById(element){
-//     var [ examn ] = await getExamenId(element);
-
-//     var examnSections = await getExamnSection(element);
-    
-//     var questions = [];
-//     for(var i=0; i< examnSections.length; i++){
+    //Verify everything is in the correct format for the correct space
+    verify = 0
+    await data.respuestasExamen.forEach(async (element) => {
+        element = await JSON.parse(JSON.stringify(element));
+        if(!(typeof(element.idPregunta) == "number"))
+            verify = 1;
         
-//         questions = await getQuestionsWithAnswers(examnSections[i]);
-//         examnSections[i]['preguntas'] = questions; 
-//     }
+        if(!(typeof(element.respuesta) == "string"))
+            verify = 1;
+        
+        if(!(typeof(element.puntaje) == "number"))
+            verify = 1;
+        
+        if(!(typeof(element.imagen) == "number"))
+            verify = 1;
+        
+    });
+    
+    if(verify)
+       return responseFormat.response("Todos los campos de los json del array deben estar en el formato correcto", 400, 8);
 
-//     var examnComplete = {
-//         examn,
-//         examnSections
-//     }
 
-//     return examnComplete; 
-// }
+    //Validate that all the asnswers are in the answers array 
+    return getIdQuestionsFromExamn(element)
+    .then(async (examnQuestions) => {
+        for(var i = 0; i < examnQuestions.length; i++){
+            let theAnswerIsThere = false;
+            data.respuestasExamen.forEach(element => {
+                if(examnQuestions[i].idPregunta==element.idPregunta){                    
+                    theAnswerIsThere = true;
+                }    
+            });
+            if(!theAnswerIsThere)
+                return responseFormat.response(`Para poder proceder a guardar las respuestas, tienen que estar
+                                                todas las respuestas del examen (sin importar otras condiciones).
+
+                                                Este error se puede deber tambien a que pusiste un caracter en el "idPregunta"
+                                                `, 400, 5);
+        }
+        //Add exam that was done
+        return await setExamn(data, element)
+        .then(async (value) => {
+            if(value[0] == undefined){
+                // Add answers
+                await data.respuestasExamen.forEach(async dataRow => {
+                    await setExamnAnswers(dataRow, element)
+                });
+                //Get total evaluation
+                return responseFormat.responseData(await sumTotalevaluationMinimental(element), 200, 0)
+            } else {
+                return responseFormat.response("Se esta intentando hacer otro examen del mismo tipo, para la misma consulta", 400, 1)
+            }
+        }).catch((error) =>{ 
+            return responseFormat.response(error, 400, 3);
+        });
+    })
+    .catch((error) =>{ 
+        return responseFormat.response(error, 400, 3);
+    });    
+}
 
 async function getExamnPastQuestions(element){
     // let [ examn ] = await getExamenId(element);
@@ -182,21 +229,38 @@ async function getExamnPastQuestions(element){
 }
 
 async function searchGeriatricConsults(data){
+    //Verify the JSON is complete
+    if(prevention.undefinedJson(["fechaInicio", "fechaFinal", "nombrePaciente", "nombreDoctor", "ademasInactivos"], data) == -2 
+        || prevention.isOfOneType("object", data) == -4
+        || JSON.stringify(data) === '{}')
+        return responseFormat.response("JSON no valido", 400, 8);
+    
     let serachVariable = [];
     //It means that in the search there will be a date range
     if(data.fechaInicio != "" && data.fechaFinal != ""){
         if(data.fechaInicio == "" || data.fechaFinal == ""){
-            return responseFormat.response("Se necesita un intervalo de fechas permitido", 400, 1);
+            return responseFormat.response("Valor no permitido para fechas", 400, 7);
         }
     
+        //Giving correct format for the date 
+        data.fechaInicio = await moment().format(await JSON.stringify(data.fechaInicio));
+        data.fechaInicio = JSON.parse(data.fechaInicio)
+
+        data.fechaFinal = await moment().format(await JSON.stringify(data.fechaFinal));
+        data.fechaFinal = JSON.parse(data.fechaFinal)
+
         let date1 = await Date.parse(data.fechaInicio);
-        let date2 = await Date.parse(data.fechaInicio);
-        
+        let date2 = await Date.parse(data.fechaFinal);
+
         if(isNaN(date1) || isNaN(date2))
-            return responseFormat.response("Fecha no reconocido", 400, 4); 
+            return responseFormat.response("Fecha no reconocida", 400, 4); 
         
         if(date1 > date2)
-            return responseFormat.response("Intervalo de fechas invalido", 400, 2); 
+            return responseFormat.response("Intervalo de fechas invalido", 400, 6); 
+
+        if(data.ademasInactivos == "")
+            return responseFormat.response("Se tiene que especificar si quieres buscar solo activos = 0 (o tambien inactivos = 1)", 400, 5);
+    
 
         serachVariable.push(`fechaConsulta BETWEEN '${data.fechaInicio}' AND '${data.fechaFinal}'`);
     }
@@ -369,7 +433,6 @@ async function setExamn(data, element){
 }
 
 async function setExamnAnswers(data, element){
-    console.log("query para guardar")
     await query(`CALL spCreateNewAnswer(${ element.idConsulta }, ${ data.idPregunta }, 
         '${ data.respuesta }', ${ data.puntaje }, ${ data.imagen });`);
 }
@@ -472,6 +535,42 @@ async function deleteConsult(element){
     return await query(`DELETE FROM ${ tablas.CONSULTA_GERIATRICA } WHERE idConsulta = ${ element.idConsulta }`)
 }
 
+async function getIdQuestionsFromExamn(element){
+    return query(`SELECT C.idPregunta 
+                FROM examenes AS A
+                JOIN secciones_examenes AS B
+                ON A.idExamen = B.idExamen
+                JOIN preguntas AS C
+                ON B.idSeccionExamen = C.idSeccionExamen
+                WHERE A.idExamen = ${element.idExamen};
+                `)
+}
+
+async function verifyConsultExist(element){
+
+    return await query(`
+        SELECT A.*
+        FROM consultas_geriatricas AS A
+        WHERE 
+        A.idConsulta = ${element.idConsulta} 
+        AND A.idPaciente = ${element.idPaciente} 
+        AND A.consultaTerminada = 0;
+    `);
+}
+
+async function verifyIfInConsultExistAnExamn(element){
+    return query(`
+        SELECT A.* , B.idExamen
+        FROM consultas_geriatricas AS A
+        LEFT JOIN examenes_realizados AS B
+        ON A.idConsulta = idExamen
+        WHERE 
+        A.idConsulta = ${element.idConsulta} 
+        AND A.idPaciente = ${element.idPaciente} 
+        AND B.idExamen = ${element.idExamen}
+        AND A.consultaTerminada = 0;
+    `)
+}
 //Otros queries ---
 async function getPatientId(element){
     return await query(`
