@@ -4,16 +4,16 @@ const config = require('../../configPersonal.js');
 const { query } = require('../../conection_store/controllerStore.js');
 const tablas = require('../../componentes/utils/tablasDatabase.js');
 const responseFormat = require('../../componentes/utils/response.js');
+const preventions = require('../../componentes/utils/preventions.js');
 
-exports.login = async(req, res) =>{
-
-    if(req.body.email == "" && req.body.password == ""){
-        res.send({response: responseFormat.response("Un campo esta vacio", 400, 2)});
+exports.login = async(data) =>{
+    if(data.email == "" || data.password == "" || JSON.stringify(data) === '{}'){
+        return responseFormat.response('Un espacio esta vacio', 200, 1);
     }
 
-    const [ user ] = await query(`SELECT idDoctor, password FROM ${tablas.DOCTORES} WHERE email = "${req.body.email}";`);
+    const [ user ] = await query(`SELECT idDoctor, password FROM ${tablas.DOCTORES} WHERE email = "${data.email}";`);
     
-    if(user && await bcryptjs.compare(req.body.password, user.password)){
+    if(user && await bcryptjs.compare(data.password, user.password)){
         const payload = {
             check: true,
             idDoctor: user.idDoctor
@@ -21,10 +21,10 @@ exports.login = async(req, res) =>{
 
         const token = jwt.sign(payload, config.jwt.key, { expiresIn: config.jwt.time });
         
-        res.send({ response: responseFormat.responseData(token, 200, 0) });
+        return responseFormat.responseData(token, 200, 0);
 
     } else {
-        res.send({response: responseFormat.response('Usuario o contraseña incorrecta', 200, 1)})
+        return responseFormat.response('Usuario o contraseña incorrecta', 200, 1);
     }
 }
 
@@ -64,9 +64,10 @@ exports.sessionOF = async(req, res) => {
 }
 
 exports.register = async (data) => {
-        for (const key in data){
-            if(data[key] == "") return responseFormat.response("Un campo esta vacio", 400, 3); 
-        } 
+        let resultPreventVoidJson = preventions.voidJson(["nombre", "apellido", "email", "password"], data);
+
+        if(resultPreventVoidJson != 0)
+            return responseFormat.response("Un campo esta vacio", 400, 3);
 
         let passHash = await bcryptjs.hash(data.password, config.hash.times);
 
@@ -80,7 +81,7 @@ exports.register = async (data) => {
                      VALUES ('${data.nombre}', '${data.apellido}', 
                      '${data.email}', '${passHash}');`)
         .then(() => {
-            return responseFormat.response("Se agrego el nuevo doctor", 201, 0);
+            return responseFormat.response("Se agrego un nuevo doctor", 201, 0);
         })
         .catch((error)=>{
             return responseFormat.response(error, 400, 2);

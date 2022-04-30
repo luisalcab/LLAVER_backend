@@ -9,16 +9,19 @@ function query(query){
                 if(err.errno == 1452)
                     error = "Se esta intentando asingar a una llave foraena que no existe"
                     
-                if(err.errno == 1054)
+                if((err.errno == 1054) || (err.errno == 1064))
                     error = "Se paso como parametro un dato diferente al permitido"
                 
                 if(err.errno == 1366)
                     error = "Se esta intentando ingresar un dato no valido para un campo"
 
+                if(err.errno == 1292)
+                    error = "Formato de fecha invalido"
+
                 if(err.errno == 1062)
                     error = err.sqlMessage
-                    
-                // console.log(err.errno)                
+
+                console.log(err.errno)                
                 // console.log(err)                
                 // console.log(error)                
                 return reject(error);

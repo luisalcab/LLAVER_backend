@@ -4,30 +4,65 @@ const tablas = require('../utils/tablasDatabase.js');
 const responseFormat = require('../utils/response.js');
 
 async function updateDataDoctor(data, element){
-    let [ currentDoctor ] = await getDoctorId(element);
-    
-    //Fill all the empty fields
-    for (const key in data) 
-        if(data[key] != "")
-            currentDoctor[key] = data[key]
-    
+    if (JSON.stringify(data) === '{}')
+       return responseFormat.response("No hubo información para actualizar", 400, 2)
 
-    
-    //Verify that the name does not exist
-    if(data.nombre != "" || data.apellido != ""){
-        let [ existDoctor ] = await verifyRepitName(currentDoctor);
-        if (existDoctor.doctors > 0){
-            return responseFormat.response("Se esta intentando poner un nombre que ya existe", 200, 1)
+    return await getDoctorId(element)
+    .then(async ([ currentDoctor ]) => {
+        console.log(data)
+        //Fill all the empty fields
+        for (const key in data) 
+            if(data[key] != "")
+                currentDoctor[key] = data[key]
+       
+        //Verify that the name does not exist
+        if(data.nombre != undefined || data.apellido != undefined){
+            if(data.nombre != "" || data.apellido != ""){
+                let [ existDoctor ] = await verifyRepitName(currentDoctor);
+                if (existDoctor.doctors > 0){
+                    return responseFormat.response("Se esta intentando poner un nombre que ya existe", 200, 1)
+                }
+            }
         }
-    }
-
-    return updateDoctor(currentDoctor, element)
-    .then(() => {
-        return responseFormat.response("Doctor modificado exitosamente", 200, 0);
+    
+        return updateDoctor(currentDoctor, element)
+        .then(() => {
+            return responseFormat.response("Doctor modificado exitosamente", 200, 0);
+        })
+        .catch((error) => {
+            return responseFormat.response(error, 400, 3);
+        });
     })
     .catch((error) => {
         return responseFormat.response(error, 400, 3);
-    })
+    });
+    
+
+    // let [ currentDoctor ] = await getDoctorId(element);
+    
+    // console.log(data)
+    // //Fill all the empty fields
+    // for (const key in data) 
+    //     if(data[key] != "")
+    //         currentDoctor[key] = data[key]
+    
+
+    
+    // //Verify that the name does not exist
+    // if(data.nombre != "" || data.apellido != ""){
+    //     let [ existDoctor ] = await verifyRepitName(currentDoctor);
+    //     if (existDoctor.doctors > 0){
+    //         return responseFormat.response("Se esta intentando poner un nombre que ya existe", 200, 1)
+    //     }
+    // }
+
+    // return updateDoctor(currentDoctor, element)
+    // .then(() => {
+    //     return responseFormat.response("Doctor modificado exitosamente", 200, 0);
+    // })
+    // .catch((error) => {
+    //     return responseFormat.response(error, 400, 3);
+    // })
 }
 
 async function deleteDataDoctor(element){

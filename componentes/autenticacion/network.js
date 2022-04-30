@@ -16,13 +16,18 @@ const router = express.Router();
 const { corsOptions } = require('../utils/cors.js');
 
 //Rutas de este componente
-router.post('/login', cors(corsOptions), authController.login);
+router.post('/login', cors(corsOptions), loginProcess);
 router.post('/register', cors(corsOptions), registerProcess);
 // router.get('/sessionOf', cors(corsOptions), authController.sessionOF);
 
 async function registerProcess(req, res){
     res.send({
         response: await authController.register(req.body)
+    })
+}
+async function loginProcess(req, res){
+    res.send({
+        response: await authController.login(req.body)
     })
 }
 

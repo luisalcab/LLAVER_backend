@@ -2,7 +2,8 @@
 const { query } = require('../../conection_store/controllerStore.js');
 const tablas = require('../utils/tablasDatabase.js');
 const responseFormat = require('../utils/response.js');
-
+const preventions = require('../utils/preventions.js');
+const moment = require('moment');
 async function addNewPatient(data){
     for (const key in data){
         if(data[key] == "") return responseFormat.response("Un campo esta vacio", 400, 1); 
@@ -46,7 +47,11 @@ async function getPatientById(element){
 }
 
 async function getPatientByName(data){
+    let resultPreventVoidJson = preventions.voidJson(["nombre", "ademasInactivos"], data)
     // if(data.nombre == "")  return responseFormat.response("El campo de esta vacio", 400, 1); 
+    if(resultPreventVoidJson != 0)
+        return responseFormat.response("Un campo esta vacio", 400, 3);
+
 
     let searchActiveAndInactives = "AND status = 1";
 
@@ -63,30 +68,47 @@ async function getPatientByName(data){
 }
 
 async function updateDataPatient(data, element){
-    let [ currentPatient ] = await getPatientId(element);
-    
-    //Fill all the empty fields
-    for (const key in data) 
-        if(data[key] != "")
-            currentPatient[key] = data[key]
-
-    
-    //Verify that the name does not exist
-    if(data.nombre != "" || data.apellido != ""){
-        let [ existPatient ] = await verifyRepitName(currentPatient);
-        if (existPatient.patients > 0){
-            return responseFormat.response("Se esta intentando poner un nombre que ya existe", 200, 1)
-        }
+    if (JSON.stringify(data) === '{}')
+        return responseFormat.response("No hubo información para actualizar", 400, 4)
+        
+    if(data.sexo != "" && data.sexo != undefined){
+        if(!(data.sexo == 1 || data.sexo == 0 || data.sexo == '1' || data.sexo == '0'))
+            return responseFormat.response("valor no valido para sexo, 0 = femenino 1 = masculino", 400, 2)
     }
-
-    return await updatePatient(currentPatient, element)
-    .then(() => {
-        return responseFormat.response("Paciente modificado exitosamente", 200, 0);
-    })
-    .catch((error) => {
-        return responseFormat.response(error, 400, 3);
-    });
     
+    return await getPatientId(element)
+                .then(async ([ currentPatient ]) => {
+                    //Fill all the empty fields
+                    for (const key in data) 
+                        if(data[key] != "")
+                            currentPatient[key] = `${data[key]}`
+
+                    //Verify that the name does not exist
+                    if(data.nombre != undefined || data.apellido != undefined){
+                        if(data.nombre != "" || data.apellido != ""){
+                            let [ existPatient ] = await verifyRepitName(currentPatient);
+                            if (existPatient.patients > 0){
+                                return responseFormat.response("Se esta intentando poner un nombre que ya existe", 200, 1)
+                            }
+                        }
+                    }
+                    
+
+                    //Giving correct format for the date 
+                    currentPatient.fechaNacimiento = await moment().format(await JSON.stringify(currentPatient.fechaNacimiento));
+                    currentPatient.fechaNacimiento = JSON.parse(currentPatient.fechaNacimiento)
+
+                    return await updatePatient(currentPatient, element)
+                    .then(() => {
+                        return responseFormat.response("Paciente modificado exitosamente", 200, 0);
+                    })
+                    .catch((error) => {
+                        return responseFormat.response(error, 400, 3);
+                    });
+                })
+                .catch((error) => {
+                    return responseFormat.response(error, 400, 3);
+                });    
 }
 
 async function activateStatusById(element){
