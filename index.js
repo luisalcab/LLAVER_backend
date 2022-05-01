@@ -57,6 +57,10 @@ app.use('/paciente', PACIENTE);
 app.use('/autenticacion', AUTENTICACION);
 app.use('/consultaGeriatrica', CONSULTA_GERIATRICA);
 
+//Peticiones que no existan
+app.get('*', (req, res) => {
+    res.json({message: "Ruta no encontrada", codeStatus: 404})
+});
 
 //Asignando puerto
 app.listen(config.api.port, ()=>{

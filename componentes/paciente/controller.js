@@ -16,7 +16,6 @@ async function addNewPatient(data){
         
     let [ existName ] = await verifyRepitName(data);
     if(existName.patients==0){
-            console.log(data)
             //Giving correct format for the date 
             data.fechaNacimiento = await moment().format(await JSON.stringify(data.fechaNacimiento));
             data.fechaNacimiento = JSON.parse(data.fechaNacimiento)

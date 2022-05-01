@@ -1,13 +1,13 @@
 const fetch = require('node-fetch-commonjs');
-const testUtils = require('./testUtils.js');
+const testUtils = require('../testUtils.js');
 
-const url = 'http://localhost:3002/autenticacion/login';
+const url = 'https://geriatric-app.herokuapp.com/autenticacion/login';
 
 //This test tests the login
 var credentials = 
 [
     {
-        "email": "mina@gmail.com",
+        "email": "ferma@gmail.com",
         "password": "1234"
     }, //1 - Usuario que actualmente existe - ok
     {
@@ -42,8 +42,6 @@ var credentials =
     }, //9 - Sin campo de password - ok
     {
     }, //10 - Sin campo - ok
-
-
 ]
 
 async function test(credentials){

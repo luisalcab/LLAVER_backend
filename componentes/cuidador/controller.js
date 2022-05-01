@@ -3,23 +3,51 @@ const { query } = require('../../conection_store/controllerStore.js');
 const tablas = require('../utils/tablasDatabase.js');
 const responseFormat = require('../utils/response.js');
 
+/*
+*/
+
 async function addNewCarer(data){
     for (const key in data){
         if(data[key] == "") return responseFormat.response("Un campo esta vacio", 400, 1); 
     } 
-        
-    let [ existName ] = await verifyRepitName(data);
-    if(existName.carers==0){
-        return await addCarer(data)
-        .then(() => {
-            return responseFormat.response("Se ha agregado al cuidador exitosamente", 201, 0);
+
+
+    if(data["telefono"] == undefined || data["apellido"] == undefined)
+        return responseFormat.response("JSON no valido", 400, 2); 
+     
+    
+
+    let re = new RegExp(/(^\d{2}\-\d{4}\-\d{4}$)|(^\d{3}\-\d{3}\-\d{4}$)/, 's');
+
+    /*
+        Formato valido para esta expresion
+        33-4557-7555
+        124-758-7842
+    */
+    if(!(re.test(data.telefono)))
+        return responseFormat.response(`El formato del telefono no es valido, formatos permitidos: 
+                                        xx-xxxx-xxxx
+                                        xxx-xxx-xxxx`, 400, 1); 
+                                        adad
+ 
+        return await verifyRepitName(data)
+        .then(async ([ existName ]) => {
+            if(existName.carers==0){
+                return await addCarer(data)
+                .then(() => {
+                    return responseFormat.response("Se ha agregado al cuidador exitosamente", 201, 0);
+                })
+                .catch((error) => {
+                    return responseFormat.response(error, 400, 3)
+                });
+            } else {
+                return responseFormat.response("El \"nombre completo\" que se esta intentando poner ya existe", 400, 2);
+            }
         })
         .catch((error) => {
             return responseFormat.response(error, 400, 3)
         });
-    } else {
-        return responseFormat.response("El \"nombre completo\" que se esta intentando poner ya existe", 400, 2);
-    }
+    
 }
 
 async function getCarerById(element){
@@ -66,8 +94,14 @@ async function getCarerByName(data){
 
 
 async function updateDataCarer(data, element){
-    await updateCarer(data, element);
-    return 1
+    return await updateCarer(data, element)
+    .then(() => {
+        return responseFormat.response("El cuidado se a modificado exitosamente", 200, 0);
+    })
+    .catch((error) => {
+        return responseFormat.response(error, 400, 3);
+    });
+    
 }
 
 //Queries
@@ -105,7 +139,8 @@ async function updateCarer(data, element){
 }
 
 async function verifyRepitName(data){
-    return await query(`SELECT COUNT(idPaciente) AS carers FROM pacientes WHERE CONCAT(nombre, apellido) = CONCAT('${ data.nombre }', '${ data.apellido }')`); 
+    return await query(`SELECT COUNT(idPaciente) AS carers FROM ${ tablas.CUIDADORES } 
+                        WHERE CONCAT(nombre, apellido) = CONCAT('${ data.nombre }', '${ data.apellido }');`); 
 }
 
 module.exports	= {

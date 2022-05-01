@@ -110,7 +110,7 @@ async function setExamnQuestions(data, element){
         
     //Verify if there is not an empty element component of the answer
     let verify = 0;
-    // console.log(data.respuestasExamen)
+
     await data.respuestasExamen.forEach(element => {
         for (const key in element) {
             if(element[key] == "" && element[key] != 0){

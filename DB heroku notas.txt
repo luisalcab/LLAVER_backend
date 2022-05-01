@@ -1,0 +1,15 @@
+Cuando vayas a instalar una DB en el servicio para conectar con heroku, tienes que hacer los siguentes cambios
+
+1 - Quitar todos los "VISIBLES"
+
+2 - Cambiar:
+    “utf8mb4_0900_ai_ci” with “utf8mb4_general_ci”  
+    “CHARSET=utf8mb4” with “CHARSET=utf8“.
+
+3 - Agregar los store procedures manualmente
+
+(El 1 y 2 son problemas por versiones)
+(El 3 es por privilegios)
+
+https://geriatric-app.herokuapp.com/  
+https://git.heroku.com/geriatric-app.git

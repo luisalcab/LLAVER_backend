@@ -11,21 +11,26 @@ exports.login = async(data) =>{
         return responseFormat.response('Un espacio esta vacio', 200, 1);
     }
 
-    const [ user ] = await query(`SELECT idDoctor, password FROM ${tablas.DOCTORES} WHERE email = "${data.email}";`);
+    return await query(`SELECT idDoctor, password FROM ${tablas.DOCTORES} WHERE email = "${data.email}";`)
+    .then(async ([ user ]) => {
+        if(user && await bcryptjs.compare(data.password, user.password)){
+            const payload = {
+                check: true,
+                idDoctor: user.idDoctor
+            };
     
-    if(user && await bcryptjs.compare(data.password, user.password)){
-        const payload = {
-            check: true,
-            idDoctor: user.idDoctor
-        };
+            const token = jwt.sign(payload, config.jwt.key, { expiresIn: config.jwt.time });
+            
+            return responseFormat.responseData(token, 200, 0);
+    
+        } else {
+            return responseFormat.response('Usuario o contraseña incorrecta', 300, 1);
+        }
+    })
+    .catch((error) => {
+        return responseFormat.response(error, 300, 1);
+    });
 
-        const token = jwt.sign(payload, config.jwt.key, { expiresIn: config.jwt.time });
-        
-        return responseFormat.responseData(token, 200, 0);
-
-    } else {
-        return responseFormat.response('Usuario o contraseña incorrecta', 200, 1);
-    }
 }
 
 exports.isAuthenticated = async(req, res, next) => {
