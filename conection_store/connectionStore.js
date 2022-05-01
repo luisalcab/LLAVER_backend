@@ -1,5 +1,5 @@
 const mysql = require('mysql');
-const config = require('../configPersonal.js');
+const config = require('../config.js');
 
 
 const dbconfig = {

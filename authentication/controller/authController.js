@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcryptjs = require('bcryptjs');
-const config = require('../../configPersonal.js');
+const config = require('../../config.js');
 const { query } = require('../../conection_store/controllerStore.js');
 const tablas = require('../../componentes/utils/tablasDatabase.js');
 const responseFormat = require('../../componentes/utils/response.js');

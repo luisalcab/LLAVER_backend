@@ -13,7 +13,7 @@ const AUTENTICACION = require('./componentes/autenticacion/network.js');
 const CONSULTA_GERIATRICA = require('./componentes/consulta_geriatrica/network.js');
 
 //Importando archivo de configuracion
-const config = require('./configPersonal.js');
+const config = require('./config.js');
 
 //Inicializando servidor
 const app = express();
