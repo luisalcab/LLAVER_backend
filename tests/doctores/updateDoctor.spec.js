@@ -149,6 +149,62 @@ var registers = [
             "idPaciente": 52
         }
     }, //15 - Email repetido - ok
+    {
+        data: {
+            "email": `ferma@yahoo.com`,
+        },
+        identifier: {
+            "idPaciente": 52
+        }
+    }, //16 - Extension de correo invalido - ok
+    {
+        data: {
+            "email": `#ferma@yahoo.com`,
+        },
+        identifier: {
+            "idPaciente": 52
+        }
+    }, //17 - Extension uso de caracteres no permitidos en correo - ok
+    {
+        data: {
+            "email": `ferma${Math.random()}@hotmail.com `,
+        },
+        identifier: {
+            "idPaciente": 52
+        }
+    }, //18 - Extension correo con espacios final - ok
+    {
+        data: {
+            "email": ` ferma${Math.random()}@hotmail.com`,
+        },
+        identifier: {
+            "idPaciente": 52
+        }
+    }, //19 - Extension correo con espacios inicio - ok
+    {
+        data: {
+            "email": `ferma ${Math.random()}@hotmail.com`,
+        },
+        identifier: {
+            "idPaciente": 52
+        }
+    }, //20 - Extension correo con espacios en medio - ok
+    {
+        data: {
+            "email": `ferma${Math.random()}@hotmail.net`,
+        },
+        identifier: {
+            "idPaciente": 52
+        }
+    }, //21 - Dominio no permitido - ok
+    {
+        data: {
+            "email": `ferma${Math.random()}@hotmail.com`,
+        },
+        identifier: {
+            "idPaciente": 52
+        }
+    }, //22 - Extension agregado exitoso pero con extension hotmail - ok
 ]
 
 

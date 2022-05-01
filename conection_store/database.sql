@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS `proyecto_geriatra`.`doctores` (
   UNIQUE INDEX `idDoctor_UNIQUE` (`idDoctor` ASC) VISIBLE,
   UNIQUE INDEX `email_UNIQUE` (`email` ASC) VISIBLE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 48
+AUTO_INCREMENT = 85
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -53,9 +53,10 @@ CREATE TABLE IF NOT EXISTS `proyecto_geriatra`.`pacientes` (
   INDEX `idDoctor_idx` (`idDoctor` ASC) VISIBLE,
   CONSTRAINT `idDoctor`
     FOREIGN KEY (`idDoctor`)
-    REFERENCES `proyecto_geriatra`.`doctores` (`idDoctor`))
+    REFERENCES `proyecto_geriatra`.`doctores` (`idDoctor`)
+    ON DELETE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 23
+AUTO_INCREMENT = 53
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -77,12 +78,14 @@ CREATE TABLE IF NOT EXISTS `proyecto_geriatra`.`consultas_geriatricas` (
   INDEX `idPacienteConsulta_idx` (`idPaciente` ASC) VISIBLE,
   CONSTRAINT `idDoctorConsulta`
     FOREIGN KEY (`idDoctor`)
-    REFERENCES `proyecto_geriatra`.`doctores` (`idDoctor`),
+    REFERENCES `proyecto_geriatra`.`doctores` (`idDoctor`)
+    ON DELETE CASCADE,
   CONSTRAINT `idPacienteConsulta`
     FOREIGN KEY (`idPaciente`)
-    REFERENCES `proyecto_geriatra`.`pacientes` (`idPaciente`))
+    REFERENCES `proyecto_geriatra`.`pacientes` (`idPaciente`)
+    ON DELETE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 50
+AUTO_INCREMENT = 493
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -130,7 +133,8 @@ CREATE TABLE IF NOT EXISTS `proyecto_geriatra`.`examenes_realizados` (
   INDEX `idExamenExamenRealizado_idx` (`idExamen` ASC) VISIBLE,
   CONSTRAINT `idConsultaExamenRealizado`
     FOREIGN KEY (`idConsulta`)
-    REFERENCES `proyecto_geriatra`.`consultas_geriatricas` (`idConsulta`),
+    REFERENCES `proyecto_geriatra`.`consultas_geriatricas` (`idConsulta`)
+    ON DELETE CASCADE,
   CONSTRAINT `idExamenExamenRealizado`
     FOREIGN KEY (`idExamen`)
     REFERENCES `proyecto_geriatra`.`examenes` (`idExamen`))
@@ -173,7 +177,7 @@ CREATE TABLE IF NOT EXISTS `proyecto_geriatra`.`preguntas` (
     FOREIGN KEY (`idSeccionExamen`)
     REFERENCES `proyecto_geriatra`.`secciones_examenes` (`idSeccionExamen`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 13
+AUTO_INCREMENT = 12
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -193,12 +197,13 @@ CREATE TABLE IF NOT EXISTS `proyecto_geriatra`.`respuestas` (
   INDEX `idPreguntaRespuesta_idx` (`idPregunta` ASC) VISIBLE,
   CONSTRAINT `idConsultaRespuesta`
     FOREIGN KEY (`idConsulta`)
-    REFERENCES `proyecto_geriatra`.`consultas_geriatricas` (`idConsulta`),
+    REFERENCES `proyecto_geriatra`.`consultas_geriatricas` (`idConsulta`)
+    ON DELETE CASCADE,
   CONSTRAINT `idPreguntaRespuesta`
     FOREIGN KEY (`idPregunta`)
     REFERENCES `proyecto_geriatra`.`preguntas` (`idPregunta`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 107
+AUTO_INCREMENT = 2176
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -212,7 +217,8 @@ CREATE TABLE IF NOT EXISTS `proyecto_geriatra`.`respuestas_imagenes` (
   UNIQUE INDEX `idRespuestas_UNIQUE` (`idRespuestaImagen` ASC),
   CONSTRAINT `idRespuestaImagen`
     FOREIGN KEY (`idRespuestaImagen`)
-    REFERENCES `proyecto_geriatra`.`respuestas` (`idRespuesta`))
+    REFERENCES `proyecto_geriatra`.`respuestas` (`idRespuesta`)
+    ON DELETE CASCADE)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
@@ -288,6 +294,36 @@ BEGIN
 			VALUES (_fecha_consulta, _id_paciente, _id_doctor);
 			
 			SELECT MAX(idConsulta)  AS idConsulta FROM consultas_geriatricas;
+        END IF;
+		
+END$$
+
+DELIMITER ;
+
+-- -----------------------------------------------------
+-- procedure spExamnDone
+-- -----------------------------------------------------
+
+DELIMITER $$
+USE `proyecto_geriatra`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `spExamnDone`(
+    _id_Consulta INT,
+    _id_Examen INT,
+    _notas TEXT
+)
+BEGIN
+		IF(SELECT COUNT(idConsulta) AS repetido 
+			FROM examenes_realizados
+			WHERE idConsulta =_id_Consulta 
+            AND idExamen = _id_Examen) 
+            >= 1 THEN
+			SELECT COUNT(idConsulta) AS repetido 
+			FROM examenes_realizados
+			WHERE idConsulta =_id_Consulta 
+            AND idExamen = _id_Examen;
+        ELSE
+			INSERT INTO examenes_realizados(idConsulta, idExamen, notas)
+			VALUES (_id_Consulta, _id_Examen, _notas);
         END IF;
 		
 END$$

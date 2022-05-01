@@ -16,7 +16,7 @@ function query(query){
                     error = "Se esta intentando ingresar un dato no valido para un campo"
 
                 if(err.errno == 1292)
-                    error = "Formato de fecha invalido"
+                    error = "Formato invalido, error 1292"
 
                 if(err.errno == 1062)
                     error = err.sqlMessage

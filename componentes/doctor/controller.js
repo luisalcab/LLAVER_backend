@@ -9,7 +9,6 @@ async function updateDataDoctor(data, element){
 
     return await getDoctorId(element)
     .then(async ([ currentDoctor ]) => {
-        console.log(data)
         //Fill all the empty fields
         for (const key in data) 
             if(data[key] != "")
@@ -24,7 +23,15 @@ async function updateDataDoctor(data, element){
                 }
             }
         }
-    
+
+        // Verify that the email is in correct format
+        let re = new RegExp(/(^([a-z]|[A-Z]|[0-9]|\.|\-)+\@(gmail|hotmail).com$)/, 's');
+        if(!(re.test(data.email)))
+            return responseFormat.response(`Formato de correo invalido, el correo solo puede contener numeros, 
+            letras (tanto mayusculas como minusculas) y los simbolos: "." y "-".
+            Ademas correo debe de finalizar con @gmail.com (tambien admite hotmail).
+            El correo no puede tener espacios.`, 400, 4);
+
         return updateDoctor(currentDoctor, element)
         .then(() => {
             return responseFormat.response("Doctor modificado exitosamente", 200, 0);
@@ -36,33 +43,6 @@ async function updateDataDoctor(data, element){
     .catch((error) => {
         return responseFormat.response(error, 400, 3);
     });
-    
-
-    // let [ currentDoctor ] = await getDoctorId(element);
-    
-    // console.log(data)
-    // //Fill all the empty fields
-    // for (const key in data) 
-    //     if(data[key] != "")
-    //         currentDoctor[key] = data[key]
-    
-
-    
-    // //Verify that the name does not exist
-    // if(data.nombre != "" || data.apellido != ""){
-    //     let [ existDoctor ] = await verifyRepitName(currentDoctor);
-    //     if (existDoctor.doctors > 0){
-    //         return responseFormat.response("Se esta intentando poner un nombre que ya existe", 200, 1)
-    //     }
-    // }
-
-    // return updateDoctor(currentDoctor, element)
-    // .then(() => {
-    //     return responseFormat.response("Doctor modificado exitosamente", 200, 0);
-    // })
-    // .catch((error) => {
-    //     return responseFormat.response(error, 400, 3);
-    // })
 }
 
 async function deleteDoctorById(element){
@@ -76,10 +56,8 @@ async function deleteDoctorById(element){
 }
 
 async function getDoctorById(data){
-    console.log(data)
     return await getDoctorId(data)
     .then((value) => {
-        console.log(value)
         return responseFormat.responseData(value, 200, 0);
     })
     .catch((error) => {
