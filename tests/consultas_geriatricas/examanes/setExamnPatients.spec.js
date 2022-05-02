@@ -16,9 +16,10 @@ var credentials = {
     "password": "1234"
 }
 
-var patiens = [27, 30, 33, 35, 38, 39, 41, 42, 44, 45, 47, 49, 51, 52]
+// var patiens = [27, 30, 33, 35, 38, 39, 41, 42, 44, 45, 47, 49, 51, 52]
+var patiens = [41, 42, 44, 45, 47, 49, 51, 52]
 
-var date = "2021-04-10";
+var date = "2021-04-13";
 
 
 
@@ -548,7 +549,7 @@ async function test(credentials, patiens, date, registers){
                 await fetch (`${url}/consultaGeriatrica/obtenerExamen/${data.response.data.idConsulta}/${patiens[i]}/1`, {
                     method: 'POST',
                     headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/json', 
                     'x-access-token': token,
                     },
                     body: JSON.stringify(registers[0].data)

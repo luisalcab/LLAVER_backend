@@ -31,6 +31,10 @@ async function addNewPatient(data){
     }
 }
 
+async function showAllPatiens(){
+    return await showPatiens()
+}
+
 async function getPatientById(element){
     return await getPatientId(element)
     .then((data) => {
@@ -166,6 +170,13 @@ async function getPatientId(element){
     `);
 }
 
+async function showPatiens(){
+    return await query(`
+    SELECT * FROM ${ tablas.PACIENTES }
+    ORDER BY nombre ASC, apellido ASC
+`);
+}
+
 async function getPatientName(data, searchActiveAndInactives){
     return await query(`
         SELECT idPaciente, nombre, apellido, escolaridad, fechaNacimiento, sexo, idDoctor, status
@@ -210,6 +221,7 @@ async function deletePaciente(element){
 
 module.exports	= {
     addNewPatient,
+    showAllPatiens,
     getPatientById,
     getPatientByName,
     updateDataPatient,
