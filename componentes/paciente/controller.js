@@ -181,7 +181,7 @@ async function getPatientName(data, searchActiveAndInactives){
     return await query(`
         SELECT idPaciente, nombre, apellido, escolaridad, fechaNacimiento, sexo, idDoctor, status
         FROM ${ tablas.PACIENTES } 
-        WHERE  CONCAT(nombre, apellido) LIKE '%${ data.nombre }%' ${ searchActiveAndInactives };
+        WHERE CONCAT(nombre, ' ',apellido) LIKE '%${ data.nombre }%' ${ searchActiveAndInactives };
     `);
 }
 

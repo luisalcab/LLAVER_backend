@@ -15,20 +15,20 @@ const router = express.Router();
 const { corsOptions } = require('../utils/cors.js');
 
 //Rutas de este componente
-router.post('/crearNuevaConsulta', cors(corsOptions), authController.isAuthenticated, createNewConsult);
-router.get('/obtenerExamenes', cors(corsOptions), authController.isAuthenticated, getAllExamns);
-router.get('/obtenerExamen/:idExamen', cors(corsOptions), authController.isAuthenticated, getExamnQuestionsById);
-router.post('/obtenerExamen/:idConsulta/:idPaciente/:idExamen', cors(corsOptions), authController.isAuthenticated, setExamnQuestions);
-router.get('/obtenerExamenPasado/:idConsulta/:idExamen', cors(corsOptions), authController.isAuthenticated, getExamnPastQuestions);
-router.post('/buscarConsultaGeriatrica', cors(corsOptions), authController.isAuthenticated, searchGeriatricConsults);
-router.get('/obtenerConsultaGeriatrica/Pendiente', cors(corsOptions), authController.isAuthenticated, getAllGeriatricConsultPending);
-router.get('/obtenerConsultaGeriatrica/:idConsulta', cors(corsOptions), authController.isAuthenticated, getGeriatricConsultById);
-router.put('/terminarConsultaGeriatrica/:idConsulta', cors(corsOptions), authController.isAuthenticated, finishGeriatricConsultById)
-router.delete('/eliminarConsulta/:idConsulta', cors(corsOptions), authController.isAuthenticated, deleteConsultById);
+router.post('/crearNuevaConsulta', cors(), authController.isAuthenticated, createNewConsult);
+router.get('/obtenerExamenes', cors(), authController.isAuthenticated, getAllExamns);
+router.get('/obtenerExamen/:idExamen', cors(), authController.isAuthenticated, getExamnQuestionsById);
+router.post('/obtenerExamen/:idConsulta/:idPaciente/:idExamen', cors(), authController.isAuthenticated, setExamnQuestions);
+router.get('/obtenerExamenPasado/:idConsulta/:idExamen', cors(), authController.isAuthenticated, getExamnPastQuestions);
+router.post('/buscarConsultaGeriatrica', cors(), authController.isAuthenticated, searchGeriatricConsults);
+router.get('/obtenerConsultaGeriatrica/Pendiente', cors(), authController.isAuthenticated, getAllGeriatricConsultPending);
+router.get('/obtenerConsultaGeriatrica/:idConsulta', cors(), authController.isAuthenticated, getGeriatricConsultById);
+router.put('/terminarConsultaGeriatrica/:idConsulta', cors(), authController.isAuthenticated, finishGeriatricConsultById)
+router.delete('/eliminarConsulta/:idConsulta', cors(), authController.isAuthenticated, deleteConsultById);
 
 //Notas
-router.get('/obtenerNotasConsulta/:idConsulta', cors(corsOptions), authController.isAuthenticated, getAllnotesOfAConsult);
-router.put('/modificarNota/:idConsulta/:idExamen', cors(corsOptions), authController.isAuthenticated, modifyNoteById)
+router.get('/obtenerNotasConsulta/:idConsulta', cors(), authController.isAuthenticated, getAllnotesOfAConsult);
+router.put('/modificarNota/:idConsulta/:idExamen', cors(), authController.isAuthenticated, modifyNoteById)
 
 async function createNewConsult(req, res){
     res.send({ 

@@ -15,10 +15,10 @@ const router = express.Router();
 const { corsOptions } = require('../utils/cors.js');
 
 // Rutas
-router.post('/agregarNuevoCuidador', cors(corsOptions), authController.isAuthenticated,  addNewCarer);
-router.get('/obtenerCuidadorId/:idCuidador', cors(corsOptions), authController.isAuthenticated,  getCarerById);
-router.post('/obtenerCuidadoresNombre', cors(corsOptions), authController.isAuthenticated, getCarerByName);
-router.put('/modificarCuidadores/:idCuidador', cors(corsOptions), authController.isAuthenticated,  updateDataCarer);
+router.post('/agregarNuevoCuidador', cors(), authController.isAuthenticated,  addNewCarer);
+router.get('/obtenerCuidadorId/:idCuidador', cors(), authController.isAuthenticated,  getCarerById);
+router.post('/obtenerCuidadoresNombre', cors(), authController.isAuthenticated, getCarerByName);
+router.put('/modificarCuidadores/:idCuidador', cors(), authController.isAuthenticated,  updateDataCarer);
 // Queda pendiente la eliminacion del Cuidador, hasta ahorita tenemos su estatus cambiara a "0"
 
 async function addNewCarer(req, res){

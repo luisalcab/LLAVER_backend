@@ -2,10 +2,10 @@
 
 module.exports = {
     api: {
-        port: process.env.API_PORT || 3002
+        port: process.env.PORT || 3002  
     },
     frontend: {
-        port: process.env.API_PORT || 3000 
+        port: process.env.PORT || 3000 || 3001 || 3002 || 3004 || 3005
     },
     mysql: {
         host: process.env.MYSQL_HOST || 'localhost',

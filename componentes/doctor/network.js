@@ -15,13 +15,13 @@ const router = express.Router();
 const { corsOptions } = require('../utils/cors.js');
 
 //Rutas de este componente
-router.put('/modificar/:idDoctor', cors(corsOptions), authController.isAuthenticated, updateDataDoctor);
-router.delete('/eliminar/:idDoctor', cors(corsOptions), authController.isAuthenticated, deleteDataDoctor);
-router.get('/obtenerDoctorId/:idDoctor', cors(corsOptions), authController.isAuthenticated, getDoctorId);
-router.post('/obtenerDoctoresNombre', cors(corsOptions), authController.isAuthenticated, getDoctorName);
-router.put('/activarStatusDoctor/:idDoctor', cors(corsOptions), authController.isAuthenticated, activateStatusById);
-router.put('/desactivarStatusPaciente/:idDoctor', cors(corsOptions), authController.isAuthenticated, desactivateStautsById);
-router.delete('/eliminarDoctor/:idDoctor', cors(corsOptions), authController.isAuthenticated, deleteDoctorById);
+router.put('/modificar/:idDoctor', cors(), authController.isAuthenticated, updateDataDoctor);
+router.delete('/eliminar/:idDoctor', cors(), authController.isAuthenticated, deleteDataDoctor);
+router.get('/obtenerDoctorId/:idDoctor', cors(), authController.isAuthenticated, getDoctorId);
+router.post('/obtenerDoctoresNombre', cors(), authController.isAuthenticated, getDoctorName);
+router.put('/activarStatusDoctor/:idDoctor', cors(), authController.isAuthenticated, activateStatusById);
+router.put('/desactivarStatusPaciente/:idDoctor', cors(), authController.isAuthenticated, desactivateStautsById);
+router.delete('/eliminarDoctor/:idDoctor', cors(), authController.isAuthenticated, deleteDoctorById);
 
 async function updateDataDoctor(req, res){
     res.send({

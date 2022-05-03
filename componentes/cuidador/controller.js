@@ -142,7 +142,7 @@ async function getCarerName(data){
     return await query(`
         SELECT idCuidador, nombre, apellido, telefono
         FROM ${ tablas.CUIDADORES } 
-        WHERE  CONCAT(nombre, apellido) LIKE '%${data.nombre}%';
+        WHERE  CONCAT(nombre, ' ', apellido) LIKE '%${data.nombre}%';
     `);
 }
 

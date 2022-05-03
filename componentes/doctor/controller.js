@@ -124,7 +124,7 @@ async function getDoctorId(data){
 async function getDoctorName(data, searchActiveAndInactives){
     return await query(`
         SELECT idDoctor, nombre, apellido, email, status FROM ${ tablas.DOCTORES } 
-        WHERE  CONCAT(nombre, apellido) LIKE '%${data.nombre}%' ${ searchActiveAndInactives };
+        WHERE  CONCAT(nombre, ' ', apellido) LIKE '%${data.nombre}%' ${ searchActiveAndInactives };
     `)
 }
 

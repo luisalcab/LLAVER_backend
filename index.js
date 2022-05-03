@@ -11,6 +11,7 @@ const CUIDADOR = require('./componentes/cuidador/network.js');
 const PACIENTE = require('./componentes/paciente/network.js');
 const AUTENTICACION = require('./componentes/autenticacion/network.js');
 const CONSULTA_GERIATRICA = require('./componentes/consulta_geriatrica/network.js');
+const ESTADISTICA = require('./componentes/estadistica/network.js');
 
 //Importando archivo de configuracion
 const config = require('./config.js');
@@ -56,6 +57,7 @@ app.use('/cuidador', CUIDADOR);
 app.use('/paciente', PACIENTE);
 app.use('/autenticacion', AUTENTICACION);
 app.use('/consultaGeriatrica', CONSULTA_GERIATRICA);
+app.use('/estadistica', ESTADISTICA)
 
 //Peticiones que no existan
 app.get('*', (req, res) => {

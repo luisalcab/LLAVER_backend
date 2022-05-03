@@ -15,14 +15,14 @@ const router = express.Router();
 const { corsOptions } = require('../utils/cors.js');
 
 // Rutas
-router.post('/agregarNuevoPaciente', cors(corsOptions), authController.isAuthenticated,  addNewPatient);
-router.get('/mostarTodosPacientes', cors(corsOptions), authController.isAuthenticated, showAllPatients);
-router.get('/obtenerPacienteId/:idPaciente', cors(corsOptions), authController.isAuthenticated,  getPatientById);
-router.post('/obtenerPacientesNombre', cors(corsOptions), authController.isAuthenticated, getPatientByName);
-router.put('/modificarPaciente/:idPaciente', cors(corsOptions), authController.isAuthenticated,  updateDataPatient);
-router.put('/activarStatusPaciente/:idPaciente', cors(corsOptions), authController.isAuthenticated, activateStatusById);
-router.put('/desactivarStatusPaciente/:idPaciente', cors(corsOptions), authController.isAuthenticated, desactivateStautsById);
-router.delete('/eliminarPaciente/:idPaciente', cors(corsOptions), authController.isAuthenticated, deletePacienteById)
+router.post('/agregarNuevoPaciente', cors(), authController.isAuthenticated,  addNewPatient);
+router.get('/mostarTodosPacientes', cors(), authController.isAuthenticated, showAllPatients);
+router.get('/obtenerPacienteId/:idPaciente', cors(), authController.isAuthenticated,  getPatientById);
+router.post('/obtenerPacientesNombre', cors(), authController.isAuthenticated, getPatientByName);
+router.put('/modificarPaciente/:idPaciente', cors(), authController.isAuthenticated,  updateDataPatient);
+router.put('/activarStatusPaciente/:idPaciente', cors(), authController.isAuthenticated, activateStatusById);
+router.put('/desactivarStatusPaciente/:idPaciente', cors(), authController.isAuthenticated, desactivateStautsById);
+router.delete('/eliminarPaciente/:idPaciente', cors(), authController.isAuthenticated, deletePacienteById)
 // Queda pendiente la eliminacion del paciente, hasta ahorita tenemos su estatus cambiara a "0"
 
 async function addNewPatient(req, res){
