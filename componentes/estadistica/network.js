@@ -15,16 +15,15 @@ const router = express.Router();
 const { corsOptions } = require('../utils/cors.js');
 
 //Rutas de este componente
-router.post('/promedioEdadPuntaje', cors(corsOptions), authController.isAuthenticated, promedioEdadPuntaje);
-router.post('/promedioSexoPuntaje', cors(corsOptions), authController.isAuthenticated, promedioSexoPuntaje);
-router.post('/promediosAnosPuntaje', cors(corsOptions), authController.isAuthenticated, promedioAnosPuntaje);
-router.post('/NumPorSexo', cors(corsOptions), authController.isAuthenticated, NumPorSexo);
+router.get('/promedioPuntajeIntervaloEdad', cors(), authController.isAuthenticated, promedioPuntajeIntervaloEdad)
+router.get('/promedioSexoPuntaje', cors(), authController.isAuthenticated, promedioSexoPuntaje); // ok
+router.get('/promedioGeneralIntervaloAnual', cors(), authController.isAuthenticated, promedioGeneralIntervaloAnual); // ok
+router.get('/NumPorSexo', cors(), authController.isAuthenticated, NumPorSexo); // ok
 
-
-async function promedioEdadPuntaje(req, res){
+async function promedioPuntajeIntervaloEdad(req, res){
     res.send({
-        response: await controller.promedioEdadPuntaje(req.body, req.params)
-    })  
+        response: await controller.promedioPuntajeIntervaloEdad(req.body, req.params)
+    });  
 }
 
 async function promedioSexoPuntaje(req, res){
@@ -33,16 +32,17 @@ async function promedioSexoPuntaje(req, res){
     })  
 }
 
-async function promedioAnosPuntaje(req, res){
+async function promedioGeneralIntervaloAnual(req, res){
     res.send({
-        response: await controller.promedioAnosPuntaje(req.body, req.params)
-    })  
+        response: await controller.promedioGeneralIntervaloAnual(req.body, req.params)
+    });
 }
+
 
 async function NumPorSexo(req, res){
     res.send({
         response: await controller.NumPorSexo(req.body, req.params)
-    })  
+    });
 }
 
 module.exports = router;

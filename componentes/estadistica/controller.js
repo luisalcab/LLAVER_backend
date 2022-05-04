@@ -2,27 +2,128 @@
 const { query } = require('../../conection_store/controllerStore.js');
 const tablas = require('../utils/tablasDatabase.js');
 const responseFormat = require('../utils/response.js');
-// const moment = require('..')
+const moment = require('moment');
+const { isDate } = require('moment');
+const { invalid } = require('moment');
 
-async function promedioEdadPuntaje(){
-    promedioPorEdadPuntaje()
+
+
+async function promedioPuntajeIntervaloEdad(){
+    var intervals = 
+        [
+            {
+                "invervaloEdadMenor": "65",
+                "invervaloEdadMayor": "75",
+                "startInterval": await moment(moment().format()).add(-75, 'Y').add(1, 'd').format('YYYY-MM-DD'),
+                "endInterval":     await moment(moment().format()).add(-65, 'Y').format('YYYY-MM-DD')
+            },
+            {
+                "invervaloEdadMenor": "75",
+                "invervaloEdadMayor": "85",
+                "startInterval": await moment(moment().format()).add(-75, 'Y').add(1, 'd').format('YYYY-MM-DD'),
+                "endInterval":     await moment(moment().format()).add(-85, 'Y').format('YYYY-MM-DD')
+            },
+            {
+                "invervaloEdadMenor": "85",
+                "invervaloEdadMayor": "95",
+                "startInterval": await moment(moment().format()).add(-95, 'Y').add(1, 'd').format('YYYY-MM-DD'),
+                "endInterval":     await moment(moment().format()).add(-85, 'Y').format('YYYY-MM-DD')
+            },
+            {
+                "invervaloEdadMenor": "95",
+                "invervaloEdadMayor": "105",
+                "startInterval": await moment(moment().format()).add(-105, 'Y').format('YYYY-MM-DD'),
+                "endInterval":     await moment(moment().format()).add(-95, 'Y').format('YYYY-MM-DD')
+            },
+        ]
+
+    var avgIntervals = [];
+    for(var i = 0; i < intervals.length; i++){
+        let resQuery = await avgGeneralIntervaloEdades(intervals[i].startInterval, intervals[i].endInterval)
+        .then(([ data ]) => {
+            return {"id": 0, "avg": data.puntajePromedioAnualIntervalo}
+        }).catch((error) => {
+            return {"id": -1, "error": error}
+        });
+
+
+        //Manage error (if it has)
+        if(resQuery.id == -1){
+            return responseFormat.response(resQuery.error, 400, 3);
+        } else {
+            if(resQuery.avg == null)
+                resQuery.avg = 0;
+
+            avgIntervals.push({ "startInterval": intervals[i].invervaloEdadMenor, 
+                                "endIntercal": intervals[i].invervaloEdadMayor, 
+                                "anualIntervalAvg": resQuery.avg });
+        }
+
+
+    }
+
+    return responseFormat.responseData(avgIntervals, 200, 0)
+
 }
 
 async function promedioSexoPuntaje(){
-    return await promedioPorPuntajeHombres()
-    .then(async ([values3]) => {
-        return await promedioPorPuntajeMujeres()
-        .then(([values4]) =>{
-            return {
-                "puntajes promedio mujeres": values4.mujeres,
-                "puntajes promedio hombres": values3.hombres
-            }
-        })
+    return await totalAvgBySex()
+    .then((data) => {
+        return responseFormat.responseData(data);
+    })
+    .catch((error) => {
+        return responseFormat.response(error, 400, 3);
     })
 }
 
-async function promedioAnosPuntaje(){
-    promedioPorAñosPuntaje()
+async function promedioGeneralIntervaloAnual(data){
+    
+    if(data.startDate == undefined || data.finishDate == undefined)
+        return responseFormat.response("JSON no valido", 400, 1); 
+
+    if(data.startDate == "" || data.finishDate=="")
+        return responseFormat.response("No puede haber campos vacios para las fechas", 400, 2); 
+    // console.log(new Date(data.startDate == 'Invalid Date')) 
+    // if(isDate(data.startDate) == false || isDate(data.finishDate) == false)
+    //     return responseFormat.response("Estas intentando poner un valor diferente a fecha en uno de los inputs", 400, 4); 
+
+    //Creamos varaibles con valores iniciales
+    let startInterval = await moment(moment(data.startDate)).format('YYYY-MM-DD');
+    let finishInterval = await moment(moment(data.startDate)).add(364, 'd').format('YYYY-MM-DD');
+    let endDateAnalitic = await moment(moment(data.finishDate)).add(364, 'd').format('YYYY-MM-DD');
+
+    if(startInterval > endDateAnalitic)
+        return responseFormat.response("Intervalo de fechas invalido (la fecha inicial es mayor a la fecha final)", 400, 3);
+
+    let avgIntervals = [];
+    while(await moment(startInterval).add(1, 'd').format('YYYY-MM-DD') < endDateAnalitic){
+        //Call query
+        let resQuery = await avgGeneralIntervaloAnual(startInterval, finishInterval)
+        .then(([ data ]) => {
+            return {"id": 0, "date": startInterval, "avg": data.puntajePromedioAnualIntervalo}
+        }).catch((error) => {
+            return {"id": -1, "error": error}
+        });
+
+        //Manage error (if it has)
+        if(resQuery.id == -1){
+            return responseFormat.response(resQuery.error, 400, 3);
+        } else {
+            if(resQuery.avg == null)
+                resQuery.avg = 0;
+
+            avgIntervals.push({ "date": resQuery.date, "anualAvg": resQuery.avg });
+        }
+
+        //Update the variables for next iteration
+        startInterval = await moment(startInterval).add(1, 'Y').format('YYYY-MM-DD');
+        finishInterval = await moment(startInterval).add(364, 'd').format('YYYY-MM-DD');
+        
+
+    }
+
+    
+    return responseFormat.responseData(avgIntervals, 200, 0)
 }
 
 async function NumPorSexo(){
@@ -39,52 +140,36 @@ async function NumPorSexo(){
 }
 
 // Queries
-
-async function promedioPorEdadPuntaje(){
+async function totalAvgBySex(){
     return await query(`
-        SELECT edades, puntaje
-        FROM pacientes, respuestas
-        FROM edades AS rango1 WHERE rangoini <= '65' AND rangofin > '75'
-        FROM edades AS rango2 WHERE rangoini <= '75' AND rangofin > '85'
-        FROM edades AS rango3 WHERE rangoini <= '85' AND rangofin > '95'
-        FROM edades AS rango4 WHERE rangoini <= '95' AND rangofin > '105'
-        WHERE puntaje AVG(puntajeRango1) GROUP BY rango1
-        WHERE puntaje AVG(puntajeRango2) GROUP BY rango2
-        WHERE puntaje AVG(puntajeRango3) GROUP BY rango3
-        WHERE puntaje AVG(puntajeRango4) GROUP BY rango4;
-    `);
+    SELECT A.sexo, AVG(C.puntaje) AS promedioTotal
+    FROM ${ tablas.PACIENTES } AS A
+    JOIN ${ tablas.CONSULTA_GERIATRICA} AS B
+    ON A.idPaciente = B.idPaciente
+    JOIN ${ tablas.RESPUESTAS } AS C
+    ON B.idConsulta = C.idConsulta
+    GROUP BY A.sexo
+    `)
 }
 
-async function promedioPorPuntajeHombres(){
+async function avgGeneralIntervaloEdades(initInterval, finishInterval){
     return await query(`
-    SELECT pacientes.sexo, AVG(respuestas.puntaje)
-    AS hombres
-    FROM pacientes, respuestas
-    WHERE sexo ="0"
-    GROUP BY sexo
-    `);
+        SELECT AVG(B.puntaje) AS puntajePromedioAnualIntervalo
+        FROM ${ tablas.CONSULTA_GERIATRICA } AS A
+        JOIN ${ tablas.RESPUESTAS } AS B
+        ON A.idConsulta = B.idConsulta
+        JOIN ${ tablas.PACIENTES} AS C
+        ON A.idPaciente = C.idPaciente
+        WHERE C.fechaNacimiento BETWEEN '${ initInterval }' AND '${ finishInterval }'`);
 }
 
-async function promedioPorPuntajeMujeres(){
-    return await query(`
-    SELECT pacientes.sexo, AVG(respuestas.puntaje)
-    AS mujeres
-    FROM pacientes, respuestas
-    WHERE sexo ="1"
-    GROUP BY sexo
-    `);
-}
-
-async function promedioPorAñosPuntaje(){
-    return await query(`
-        SELECT fechaConsulta, puntaje
-        FROM consultas_geriiatricas, respuestas
-        WHERE puntaje AVG(puntaje2019) GROUP BY consultas like '%2019%'
-        WHERE puntaje AVG(puntaje2020) GROUP BY consultas like '%2020%'
-        WHERE puntaje AVG(puntaje2021) GROUP BY consultas like '%2021%'
-        WHERE puntaje AVG(puntaje2022) GROUP BY consultas like '%2022%';
-        
-    `);
+async function avgGeneralIntervaloAnual(initInterval, finishInterval){
+    return await query( `
+        SELECT AVG(B.puntaje) AS puntajePromedioAnualIntervalo
+        FROM ${ tablas.CONSULTA_GERIATRICA } AS A
+        JOIN ${ tablas.RESPUESTAS } AS B
+        ON A.idConsulta = B.idConsulta
+        WHERE A.fechaConsulta BETWEEN '${ initInterval }' AND '${ finishInterval }'`);
 }
 
 async function numPacientesMasculinos(){return await query(`SELECT count(sexo) AS hombres FROM pacientes WHERE sexo="1"`);}
@@ -92,8 +177,8 @@ async function numPacientesMasculinos(){return await query(`SELECT count(sexo) A
 async function numPacientesFemeninos(){return await query(`SELECT count(sexo) AS mujeres FROM pacientes WHERE sexo="0"`);}
 
 module.exports = {
-promedioEdadPuntaje,
+promedioPuntajeIntervaloEdad,
 promedioSexoPuntaje,
-promedioAnosPuntaje,
+promedioGeneralIntervaloAnual,
 NumPorSexo
 }
