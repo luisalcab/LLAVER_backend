@@ -5,6 +5,7 @@ const responseFormat = require('../utils/response.js');
 const moment = require('moment');
 const { isDate } = require('moment');
 const { invalid } = require('moment');
+const { DATE } = require('mysql/lib/protocol/constants/types');
 
 
 
@@ -83,9 +84,9 @@ async function promedioGeneralIntervaloAnual(data){
 
     if(data.startDate == "" || data.finishDate=="")
         return responseFormat.response("No puede haber campos vacios para las fechas", 400, 2); 
-    // console.log(new Date(data.startDate == 'Invalid Date')) 
-    // if(isDate(data.startDate) == false || isDate(data.finishDate) == false)
-    //     return responseFormat.response("Estas intentando poner un valor diferente a fecha en uno de los inputs", 400, 4); 
+
+    if(isNaN(new Date(data.startDate).getMilliseconds()) || isNaN(new Date(data.finishDate).getMilliseconds()))
+        return responseFormat.response("Estas intentando poner un valor diferente a fecha en uno de los inputs", 400, 5); 
 
     //Creamos varaibles con valores iniciales
     let startInterval = await moment(moment(data.startDate)).format('YYYY-MM-DD');
@@ -121,7 +122,6 @@ async function promedioGeneralIntervaloAnual(data){
         
 
     }
-
     
     return responseFormat.responseData(avgIntervals, 200, 0)
 }
