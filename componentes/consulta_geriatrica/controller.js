@@ -146,7 +146,7 @@ async function setExamnQuestions(data, element){
 
 
     //Validate that all the asnswers are in the answers array 
-    return getIdQuestionsFromExamn(element)
+    return await getIdQuestionsFromExamn(element)
     .then(async (examnQuestions) => {
         for(var i = 0; i < examnQuestions.length; i++){
             let theAnswerIsThere = false;
@@ -170,8 +170,8 @@ async function setExamnQuestions(data, element){
                 await data.respuestasExamen.forEach(async dataRow => {
                     await setExamnAnswers(dataRow, element)
                 });
-                //Get total evaluation
-                return responseFormat.responseData(await sumTotalevaluationMinimental(element), 200, 0)
+
+                return responseFormat.responseData("Se han guardado las preguntas exitosamente", 200, 0);
             } else {
                 return responseFormat.response("Se esta intentando hacer otro examen del mismo tipo, para la misma consulta", 400, 1)
             }
@@ -181,7 +181,8 @@ async function setExamnQuestions(data, element){
     })
     .catch((error) =>{ 
         return responseFormat.response(error, 400, 3);
-    });    
+    });  
+
 }
 
 async function getExamnPastQuestions(element){
@@ -371,14 +372,6 @@ async function modifyNoteById(data, element){
 }
 
 // Cuestiones de logica 
-async function sumTotalevaluationMinimental(element){
-    let [ totalExamn ] = await getTotalSumEvaluationMinimental(element);
-    let [ patient ] = await getPatientId(element);
-
-    if(patient.escolaridad <= 3) totalExamn.puntajeTotal += 8;
-    
-    return totalExamn.puntajeTotal;
-}
 
 async function deleteConsultById(element){
     return await deleteConsult(element)
@@ -435,20 +428,6 @@ async function setExamn(data, element){
 async function setExamnAnswers(data, element){
     await query(`CALL spCreateNewAnswer(${ element.idConsulta }, ${ data.idPregunta }, 
         '${ data.respuesta }', ${ data.puntaje }, ${ data.imagen });`);
-}
-
-async function getTotalSumEvaluationMinimental(element){
-    return await query(`
-        SELECT SUM(D.puntaje) AS puntajeTotal 
-        FROM ${ tablas.EXAMENES } AS A
-        JOIN ${ tablas.SECCIONES_EXAMENES } AS B
-        ON A.idExamen = B.idExamen
-        JOIN ${ tablas.PREGUNTAS }  AS C
-        ON B.idSeccionExamen = C.idSeccionExamen
-        JOIN ${ tablas.RESPUESTAS }  AS D
-        ON C.idPregunta = D.idPregunta
-        WHERE D.idConsulta = ${ element.idConsulta } AND A.idExamen = ${ element.idExamen }
-    `);
 }
 
 async function searchConsults(element){

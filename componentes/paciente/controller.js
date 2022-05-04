@@ -172,9 +172,10 @@ async function getPatientId(element){
 
 async function showPatiens(){
     return await query(`
-    SELECT * FROM ${ tablas.PACIENTES }
-    ORDER BY nombre ASC, apellido ASC
-`);
+        SELECT * FROM pacientes
+        WHERE status = "1"
+        ORDER BY nombre ASC, apellido ASC
+    `);
 }
 
 async function getPatientName(data, searchActiveAndInactives){

@@ -3,11 +3,6 @@ const { query } = require('../../conection_store/controllerStore.js');
 const tablas = require('../utils/tablasDatabase.js');
 const responseFormat = require('../utils/response.js');
 const moment = require('moment');
-const { isDate } = require('moment');
-const { invalid } = require('moment');
-const { DATE } = require('mysql/lib/protocol/constants/types');
-
-
 
 async function promedioPuntajeIntervaloEdad(){
     var intervals = 
@@ -139,6 +134,21 @@ async function NumPorSexo(){
     })
 }
 
+async function totalExamenByIdConsult(element){
+    return await getTotalSumEvaluationMinimental(element)
+    .then(async ([ totalExamn ]) => {
+    return await getPatientId(element)
+    .then(([patient]) => {
+
+        if(patient.escolaridad <= 3) totalExamn.puntajeTotal += 8;
+        
+    
+        return responseFormat.responseData(totalExamn.puntajeTotal, 200, 0)
+    })
+    .catch((error) => { return responseFormat.response(error, 400, 3)});
+    }).catch((error) => { return responseFormat.response(error, 400, 3)});
+}
+
 // Queries
 async function totalAvgBySex(){
     return await query(`
@@ -148,8 +158,7 @@ async function totalAvgBySex(){
     ON A.idPaciente = B.idPaciente
     JOIN ${ tablas.RESPUESTAS } AS C
     ON B.idConsulta = C.idConsulta
-    GROUP BY A.sexo
-    `)
+    GROUP BY A.sexo`);
 }
 
 async function avgGeneralIntervaloEdades(initInterval, finishInterval){
@@ -176,9 +185,34 @@ async function numPacientesMasculinos(){return await query(`SELECT count(sexo) A
 
 async function numPacientesFemeninos(){return await query(`SELECT count(sexo) AS mujeres FROM pacientes WHERE sexo="0"`);}
 
+
+async function getTotalSumEvaluationMinimental(element){
+    return await query(`
+        SELECT SUM(D.puntaje) AS puntajeTotal 
+        FROM ${ tablas.EXAMENES } AS A
+        JOIN ${ tablas.SECCIONES_EXAMENES } AS B
+        ON A.idExamen = B.idExamen
+        JOIN ${ tablas.PREGUNTAS }  AS C
+        ON B.idSeccionExamen = C.idSeccionExamen
+        JOIN ${ tablas.RESPUESTAS }  AS D
+        ON C.idPregunta = D.idPregunta
+        WHERE D.idConsulta = ${ element.idConsulta } AND A.idExamen = ${ element.idExamen }
+    `)
+
+}
+
+//Otras querys
+async function getPatientId(element){
+    return await query(`
+        SELECT idPaciente, nombre, apellido, escolaridad, fechaNacimiento, sexo, idDoctor, status FROM ${ tablas.PACIENTES } 
+        WHERE idPaciente IN(${element.idPaciente});
+    `);
+}
+
 module.exports = {
-promedioPuntajeIntervaloEdad,
-promedioSexoPuntaje,
-promedioGeneralIntervaloAnual,
-NumPorSexo
+    promedioPuntajeIntervaloEdad,
+    promedioSexoPuntaje,
+    promedioGeneralIntervaloAnual,
+    NumPorSexo,
+    totalExamenByIdConsult
 }
