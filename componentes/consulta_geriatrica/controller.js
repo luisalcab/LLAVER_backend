@@ -166,11 +166,28 @@ async function setExamnQuestions(data, element){
         return await setExamn(data, element)
         .then(async (value) => {
             if(value[0] == undefined){
+                // console.log("element")
+                // console.log(element)
+                // console.log("data.respuestasExamen")
+                // console.log(data.respuestasExamen)
                 // Add answers
+                // await data.respuestasExamen.forEach(async dataRow => {
+                //     await setExamnAnswers(dataRow, element)
+                //     .then(() => {})
+                //     .catch(() => {})
+                // });
+                // for(var i = 0; i < data.respuestasExamen.length; i++){
+                //    if(data.respuestasExamen[i].idPregunta == 9)
+                // }
+                // await setAnswersRecursive(data.respuestasExamen, element)
+                var ultimaRespuesta = data.respuestasExamen[10];
+                data.respuestasExamen[10] = data.respuestasExamen[8];
+                data.respuestasExamen[8] = ultimaRespuesta;
                 await data.respuestasExamen.forEach(async dataRow => {
                     await setExamnAnswers(dataRow, element)
+                    .then(() => {})
+                    .catch(() => {})
                 });
-
                 return responseFormat.responseData("Se han guardado las preguntas exitosamente", 200, 0);
             } else {
                 return responseFormat.response("Se esta intentando hacer otro examen del mismo tipo, para la misma consulta", 400, 1)
@@ -185,6 +202,20 @@ async function setExamnQuestions(data, element){
 
 }
 
+async function setAnswersRecursive(arr, element){
+    console.log("Recursivo")
+    console.log(arr)
+    console.log((arr[0] != undefined))
+    if(arr[0] != undefined){
+        var dataRow = arr.pop()
+        await setExamnAnswers(dataRow, element)
+        .then(async () => {    
+            await setAnswersRecursive(arr, element)
+        })
+        .catch((error) => { return responseFormat.response(error, 400, 3)})
+    }
+
+}
 async function getExamnPastQuestions(element){
     // let [ examn ] = await getExamenId(element);
 

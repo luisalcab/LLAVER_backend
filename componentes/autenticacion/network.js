@@ -18,8 +18,8 @@ const { corsOptions } = require('../utils/cors.js');
 //Rutas de este componente
 router.post('/login', cors(), loginProcess);
 router.post('/register', cors(), registerProcess);
+router.get('/sessionOf', cors(), sessionOF);
 router.put('/changePassword/:idDoctor', cors(), changePassword);
-// router.get('/sessionOf', cors(), authController.sessionOF);
 
 async function registerProcess(req, res){
     res.send({
@@ -37,5 +37,11 @@ async function changePassword(req, res){
     res.send({
         response: await authController.changePassword(req.body, req.params)
     });
+}
+
+async function sessionOF(req, res){
+    res.send({
+        response: await authController.sessionOF(req, res)
+    })
 }
 module.exports = router;

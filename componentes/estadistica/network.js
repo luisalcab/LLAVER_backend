@@ -17,7 +17,7 @@ const { corsOptions } = require('../utils/cors.js');
 //Rutas de este componente
 router.get('/promedioPuntajeIntervaloEdad', cors(), authController.isAuthenticated, promedioPuntajeIntervaloEdad)
 router.get('/promedioSexoPuntaje', cors(), authController.isAuthenticated, promedioSexoPuntaje); // ok
-router.get('/promedioGeneralIntervaloAnual', cors(), authController.isAuthenticated, promedioGeneralIntervaloAnual); // ok
+router.post('/promedioGeneralIntervaloAnual', cors(), authController.isAuthenticated, promedioGeneralIntervaloAnual); // ok
 router.get('/NumPorSexo', cors(), authController.isAuthenticated, NumPorSexo); // ok
 router.get('/obtenerTotalExamem/:idConsulta/:idPaciente/:idExamen', cors(), authController.isAuthenticated, totalExamenByIdConsult); // ok
 

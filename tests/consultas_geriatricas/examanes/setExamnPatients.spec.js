@@ -17,9 +17,9 @@ var credentials = {
 }
 
 // var patiens = [27, 30, 33, 35, 38, 39, 41, 42, 44, 45, 47, 49, 51, 52]
-var patiens = [41, 42, 44, 45, 47, 49, 51, 52]
+var patiens = [41]
 
-var date = "2021-04-14";
+var date = "2023-01-15";
 
 
 

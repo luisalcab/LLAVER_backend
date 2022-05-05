@@ -73,7 +73,7 @@ async function promedioSexoPuntaje(){
 }
 
 async function promedioGeneralIntervaloAnual(data){
-    
+    console.log(data)
     if(data.startDate == undefined || data.finishDate == undefined)
         return responseFormat.response("JSON no valido", 400, 1); 
 
