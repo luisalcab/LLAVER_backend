@@ -11,7 +11,7 @@ Antes de iniciar el servidor sigue los siguentes pasos:
     *Por defecto el host de mysql el "localhost".
     *El nombre de la base de datos sera "proyecto_geriatra" (o si le pones otro nombre, cambiarlo por ese).
     
-    *Pon tus credenciales (usuario y contraseña) para hacer la conexcion a la base de datos.
+    *Pon tus credenciales (usuario y contraseña) para hacer la conexion a la base de datos.
         Nota: Asegurate que el "usuario" tenga todos los "privilegios" necesarios.
 
     En caso de que un dato este erróneo, cambialo para que la configuración sea la correcta.
